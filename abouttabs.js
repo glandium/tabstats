@@ -34,6 +34,7 @@ function init() {
 
   var uris = {};
   var hosts = {};
+  var urihosts = {};
   var schemes = {};
   var blankTabs = 0;
   var loadedTabs = 0;
@@ -53,8 +54,14 @@ function init() {
       if (uri.host) {
         if (uri.host in hosts)
           hosts[uri.host]++;
-        else
+        else {
           hosts[uri.host] = 1;
+          urihosts[uri.host] = {};
+        }
+        if (uri.spec in urihosts[uri.host])
+          urihosts[uri.host][uri.spec]++;
+        else
+          urihosts[uri.host][uri.spec] = 1;
       }
     } catch(e) {}
     if (uri.scheme in schemes)
@@ -128,7 +135,12 @@ function init() {
       return 0;
     }).forEach(function(host) {
       sub_li = document.createElement("li");
-      sub_li.appendChild(document.createTextNode(host+" ("+hosts[host] + " tabs)"));
+      var text = host+" (" + hosts[host] + " tabs";
+      var keys = Object.keys(urihosts[host]);
+      if (keys.length < hosts[host])
+        text += ", " + keys.length + " unique";
+      text += ")";
+      sub_li.appendChild(document.createTextNode(text));
       sub_ul.appendChild(sub_li);
     });
     li.appendChild(sub_ul);
