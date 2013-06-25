@@ -27,7 +27,7 @@ AboutTabs.prototype = {
 
   getURIFlags: function(uri)
   {
-    return Ci.nsIAboutModule.URI_SAFE_FOR_UNTRUSTED_CONTENT | Ci.nsIAboutModule.ALLOW_SCRIPT;
+    return Ci.nsIAboutModule.ALLOW_SCRIPT;
   }
 };
 
