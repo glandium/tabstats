@@ -47,9 +47,9 @@ function init() {
     if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
       loadedTabs++;
     if (uri.spec in uris)
-      uris[uri.spec]++;
+      uris[uri.spec].push(tab);
     else
-      uris[uri.spec] = 1;
+      uris[uri.spec] = [tab];
     try {
       if (uri.host) {
         if (uri.host in hosts)
@@ -100,21 +100,21 @@ function init() {
     ul.appendChild(li);
   }
 
-  var uris_ = [uri for (uri in uris) if (uris[uri] > 1)];
+  var uris_ = [uri for (uri in uris) if (uris[uri].length > 1)];
   if (uris_.length) {
     li = document.createElement("li");
     li.appendChild(document.createTextNode(uris_.length + " address" + (uris_.length > 1 ? "es" : "") + " in more than 1 tab:"));
     var sub_ul = document.createElement("ul");
     var sub_li;
     uris_.sort(function cmp(a, b) {
-      if (uris[a] < uris[b])
+      if (uris[a].length < uris[b].length)
         return 1;
-      if (uris[a] > uris[b])
+      if (uris[a].length > uris[b].length)
         return -1;
       return 0;
     }).forEach(function(uri) {
       sub_li = document.createElement("li");
-      sub_li.appendChild(document.createTextNode(uri+" ("+uris[uri] + " tabs)"));
+      sub_li.appendChild(document.createTextNode(uri+" ("+uris[uri].length + " tabs)"));
       sub_ul.appendChild(sub_li);
     });
     li.appendChild(sub_ul);
