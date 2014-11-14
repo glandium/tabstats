@@ -4,6 +4,45 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
+function close(dict, key, keep_one) {
+  if (key === undefined) {
+    for (key in dict)
+      close(dict, key, keep_one);
+    return;
+  }
+  tabs = dict[key];
+  if (keep_one) {
+    tabs.sort(function(a, b) {
+      time_a = a[0].lastAccess;
+      time_b = b[0].lastAccess;
+      if (time_a > time_b)
+        return -1;
+      if (time_b > time_a)
+        return 1;
+      return 0;
+    });
+  }
+  for (tab of tabs) {
+    if (keep_one) {
+      keep_one = false;
+      continue;
+    }
+    [tab, browser] = tab;
+    browser.removeTab(tab);
+  }
+}
+
+function create_close_link(dict, key, keep_one, label) {
+  var a = document.createElement("a");
+  a.href = '#';
+  a.onclick = function () {
+    close(dict, key, keep_one);
+    refresh();
+  }
+  a.appendChild(document.createTextNode(label));
+  return a;
+}
+
 function refresh() {
   var ul = document.getElementById("stats");
   while (ul.firstChild)
@@ -48,6 +87,7 @@ function refresh() {
     }
     if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
       loadedTabs++;
+    tab = [tab, win.gBrowser];
     if (uri.spec in uris)
       uris[uri.spec].push(tab);
     else
@@ -105,7 +145,10 @@ function refresh() {
   var uris_ = [uri for (uri in uris) if (uris[uri].length > 1)];
   if (uris_.length) {
     li = document.createElement("li");
-    li.appendChild(document.createTextNode(uris_.length + " address" + (uris_.length > 1 ? "es" : "") + " in more than 1 tab:"));
+    li.appendChild(document.createTextNode(uris_.length + " address" + (uris_.length > 1 ? "es" : "") + " in more than 1 tab: "));
+    li.appendChild(create_close_link(uris, undefined, true, "[Dedup]"));
+    li.appendChild(document.createTextNode(" "));
+    li.appendChild(create_close_link(uris, undefined, false, "[Close]"));
     var sub_ul = document.createElement("ul");
     var sub_li;
     uris_.sort(function cmp(a, b) {
@@ -116,7 +159,10 @@ function refresh() {
       return 0;
     }).forEach(function(uri) {
       sub_li = document.createElement("li");
-      sub_li.appendChild(document.createTextNode(uri+" ("+uris[uri].length + " tabs)"));
+      sub_li.appendChild(document.createTextNode(uri+" ("+uris[uri].length + " tabs) "));
+      sub_li.appendChild(create_close_link(uris, uri, true, "[Dedup]"));
+      sub_li.appendChild(document.createTextNode(" "));
+      sub_li.appendChild(create_close_link(uris, uri, false, "[Close]"));
       sub_ul.appendChild(sub_li);
     });
     li.appendChild(sub_ul);
@@ -141,8 +187,9 @@ function refresh() {
       var keys = Object.keys(urihosts[host]);
       if (keys.length < hosts[host].length)
         text += ", " + keys.length + " unique";
-      text += ")";
+      text += ") ";
       sub_li.appendChild(document.createTextNode(text));
+      sub_li.appendChild(create_close_link(hosts, host, false, "[Close]"));
       sub_ul.appendChild(sub_li);
     });
     li.appendChild(sub_ul);
