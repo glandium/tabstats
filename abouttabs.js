@@ -4,8 +4,10 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
-function init() {
+function refresh() {
   var ul = document.getElementById("stats");
+  while (ul.firstChild)
+    ul.removeChild(ul.firstChild);
   var windows = Services.wm.getEnumerator("navigator:browser");
   var windowsCount = 0;
   var tabGroupsCount = 0;
@@ -148,4 +150,4 @@ function init() {
   }
 }
 
-window.addEventListener("load", init, false);
+window.addEventListener("load", refresh, false);
