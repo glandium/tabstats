@@ -53,9 +53,9 @@ function init() {
     try {
       if (uri.host) {
         if (uri.host in hosts)
-          hosts[uri.host]++;
+          hosts[uri.host].push(tab);
         else {
-          hosts[uri.host] = 1;
+          hosts[uri.host] = [tab];
           urihosts[uri.host] = {};
         }
         if (uri.spec in urihosts[uri.host])
@@ -121,23 +121,23 @@ function init() {
     ul.appendChild(li);
   }
 
-  var hosts_ = [host for (host in hosts) if (hosts[host] > 1)];
+  var hosts_ = [host for (host in hosts) if (hosts[host].length > 1)];
   if (hosts_.length) {
     li = document.createElement("li");
     li.appendChild(document.createTextNode(hosts_.length + " host" + (hosts_.length > 1 ? "s" : "") + " in more than 1 tab:"));
     var sub_ul = document.createElement("ul");
     var sub_li;
     hosts_.sort(function cmp(a, b) {
-      if (hosts[a] < hosts[b])
+      if (hosts[a].length < hosts[b].length)
         return 1;
-      if (hosts[a] > hosts[b])
+      if (hosts[a].length > hosts[b].length)
         return -1;
       return 0;
     }).forEach(function(host) {
       sub_li = document.createElement("li");
-      var text = host+" (" + hosts[host] + " tabs";
+      var text = host+" (" + hosts[host].length + " tabs";
       var keys = Object.keys(urihosts[host]);
-      if (keys.length < hosts[host])
+      if (keys.length < hosts[host].length)
         text += ", " + keys.length + " unique";
       text += ")";
       sub_li.appendChild(document.createTextNode(text));
