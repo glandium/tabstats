@@ -43,6 +43,37 @@ function create_close_link(dict, key, keep_one, label) {
   return a;
 }
 
+function plural(n, noun) {
+  noun = noun.replace(/__/g, " ");
+  if (n == 1)
+    return noun;
+  if (noun.endsWith("s"))
+    return noun + "es";
+  if (noun.endsWith("sh"))
+    return noun;
+  if (noun.endsWith("ch"))
+    return noun + "es";
+  if (noun.endsWith("x"))
+    return noun + "es";
+  return noun + "s";
+}
+
+// en`${n} dog ${k} horse` => "2 dogs 1 horse"
+// en`${n} happy__dog` => "4 happy dogs"
+// en`${n} dog ${n}<has|have> fleas` => "1 dog has fleas"
+function en(strings, ...values) {
+  var s = strings[0];
+  for (var i = 0; i < values.length; i++) {
+    var n = values[i];
+    var fragment = strings[i+1];
+    if (fragment.charAt(0) == '<')
+      s += fragment.replace(/<(.*?)\|(.*)>/, (_, a, b) => (n == 1) ? a : b);
+    else
+      s += n + fragment.replace(/(\w+)/, (_, word) => plural(n, word));
+  }
+  return s;
+}
+
 function refresh() {
   var ul = document.getElementById("stats");
   while (ul.firstChild)
@@ -70,7 +101,7 @@ function refresh() {
     }
   }
   var li = document.createElement("li");
-  li.appendChild(document.createTextNode(tabs.length + " tab"+ (tabs.length > 1 ? "s" : "") + " across " + tabGroupsCount + " group" + (tabGroupsCount > 1 ? "s" : "") +  " in " + windowsCount + " window" + (windowsCount > 1 ? "s" : "")));
+  li.appendChild(document.createTextNode(en`${tabs.length} tab across ${tabGroupsCount} group in ${windowsCount} window`));
   ul.appendChild(li);
 
   var uris = {};
@@ -119,33 +150,33 @@ function refresh() {
     uniqueHosts++;
 
   li = document.createElement("li");
-  li.appendChild(document.createTextNode(loadedTabs + " tab" + (loadedTabs > 1 ? "s" : "") + " ha" + (loadedTabs > 1 ? "ve" : "s") + " been loaded"));
+  li.appendChild(document.createTextNode(en`${loadedTabs} tab ${loadedTabs}<has|have> been loaded`));
   ul.appendChild(li);
 
   li = document.createElement("li");
-  li.appendChild(document.createTextNode(uniqueUris + " unique address" + (uniqueUris > 1 ? "es" : "")));
+  li.appendChild(document.createTextNode(en`${uniqueUris} unique__address`));
   ul.appendChild(li);
 
   li = document.createElement("li");
-  li.appendChild(document.createTextNode(uniqueHosts + " unique host" + (uniqueHosts > 1 ? "s" : "")));
+  li.appendChild(document.createTextNode(en`${uniqueHosts} unique__host`));
   ul.appendChild(li);
 
   if (blankTabs) {
     li = document.createElement("li");
-    li.appendChild(document.createTextNode(blankTabs + " empty tab" + (blankTabs > 1 ? "s" : "")));
+    li.appendChild(document.createTextNode(en`${blankTabs} empty__tab`));
     ul.appendChild(li);
   }
 
   for (key in schemes) {
-    li = document.createElement("li");
-    li.appendChild(document.createTextNode(schemes[key]+ " " + key + ":"));
-    ul.appendChild(li);
+    var sub_li = document.createElement("li");
+    sub_li.appendChild(document.createTextNode(schemes[key]+ " " + key + ":"));
+    ul.appendChild(sub_li);
   }
 
   var uris_ = [uri for (uri in uris) if (uris[uri].length > 1)];
   if (uris_.length) {
     li = document.createElement("li");
-    li.appendChild(document.createTextNode(uris_.length + " address" + (uris_.length > 1 ? "es" : "") + " in more than 1 tab: "));
+    li.appendChild(document.createTextNode(en`${uris_.length} address` + " in more than 1 tab: "));
     li.appendChild(create_close_link(uris, undefined, true, "[Dedup]"));
     li.appendChild(document.createTextNode(" "));
     li.appendChild(create_close_link(uris, undefined, false, "[Close]"));
@@ -172,7 +203,7 @@ function refresh() {
   var hosts_ = [host for (host in hosts) if (hosts[host].length > 1)];
   if (hosts_.length) {
     li = document.createElement("li");
-    li.appendChild(document.createTextNode(hosts_.length + " host" + (hosts_.length > 1 ? "s" : "") + " in more than 1 tab:"));
+    li.appendChild(document.createTextNode(en`${hosts_.length} host in more than 1 tab:`));
     var sub_ul = document.createElement("ul");
     var sub_li;
     hosts_.sort(function cmp(a, b) {
