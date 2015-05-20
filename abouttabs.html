@@ -4,11 +4,29 @@
 <title>About Tabs</title>
 <script src="resource://tabstats/abouttabs.js"></script>
 <style type="text/css">
+body {
+  margin: 0;
+}
+
+h1 {
+  margin: 0;
+  flex: 1 1 auto;
+}
+
+#top {
+  background: lightgray;
+  margin: 0;
+  padding: 0.2em 0.8em ;
+  display: flex;
+  border-bottom: 1px solid gray;
+}
 </style>
 </head>
 <body>
+<div id="top">
 <h1>About Tabs</h1>
 <button onclick="refresh()">Refresh</button>
+</div>
 <ul id="stats">
 </ul>
 </body>
