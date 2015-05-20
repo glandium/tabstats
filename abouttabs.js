@@ -82,7 +82,6 @@ function refresh() {
   var windowsCount = 0;
   var tabGroupsCount = 0;
   var tabs = [];
-  var groups = new Set();
   while (windows.hasMoreElements()) {
     windowsCount++;
     var win = windows.getNext();
@@ -94,12 +93,13 @@ function refresh() {
     } catch(e) {
       tabs.push.apply(tabs, win.gBrowser.tabs);
     }
+    var groups = new Set();
     tabs.forEach(function(tab) {
       try {
         groups.add(JSON.parse(tab.__SS_extdata['tabview-tab']).groupID);
       } catch(e) {}
     });
-    tabGroupsCount = groups.size;
+    tabGroupsCount += groups.size;
   }
   var li = document.createElement("li");
   li.appendChild(document.createTextNode(en`${tabs.length} tab across ${tabGroupsCount} group in ${windowsCount} window`));
