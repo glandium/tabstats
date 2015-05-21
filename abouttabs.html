@@ -11,21 +11,38 @@ body {
 h1 {
   margin: 0;
   flex: 1 1 auto;
+  font-size: 1.8em;
 }
 
 #top {
   background: lightgray;
   margin: 0;
-  padding: 0.2em 0.8em ;
+  padding: 0.2em 0.8em;
   display: flex;
+}
+
+#bar {
+  background: #e0e0e0;
+  padding: 0.1em 0.5em;
+  border-top: 1px solid gray;
   border-bottom: 1px solid gray;
+}
+
+#bar span {
+  font: -moz-list;
+  color: #313739;
+  padding: 0em 0.3em;
 }
 </style>
 </head>
 <body>
 <div id="top">
-<h1>About Tabs</h1>
+<h1 id="tabs"></h1>
 <button onclick="refresh()">Refresh</button>
+</div>
+<div id="bar">
+<span id="windows"></span>
+<span id="groups"></span>
 </div>
 <ul id="stats">
 </ul>

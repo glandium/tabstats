@@ -74,6 +74,14 @@ function en(strings, ...values) {
   return s;
 }
 
+function replaceFirstChild(parent, newChild) {
+  if (parent.firstChild) {
+    parent.replaceChild(newChild, parent.firstChild);
+  } else {
+    parent.appendChild(newChild);
+  }
+}
+
 function refresh() {
   var ul = document.getElementById("stats");
   while (ul.firstChild)
@@ -101,9 +109,15 @@ function refresh() {
     });
     tabGroupsCount += groups.size;
   }
-  var li = document.createElement("li");
-  li.appendChild(document.createTextNode(en`${tabs.length} tab across ${tabGroupsCount} group in ${windowsCount} window`));
-  ul.appendChild(li);
+
+  var parent = document.getElementById("tabs");
+  replaceFirstChild(parent, document.createTextNode(en`${tabs.length} tab`));
+
+  parent = document.getElementById("windows");
+  replaceFirstChild(parent, document.createTextNode(en`${windowsCount} window`));
+
+  parent = document.getElementById("groups");
+  replaceFirstChild(parent, document.createTextNode(en`${tabGroupsCount} tab__group`));
 
   var uris = {};
   var hosts = {};
