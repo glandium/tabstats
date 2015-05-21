@@ -61,12 +61,20 @@ function plural(n, noun) {
 // en`${n} dog ${k} horse` => "2 dogs 1 horse"
 // en`${n} happy__dog` => "4 happy dogs"
 // en`${n} dog ${n}<has|have> fleas` => "1 dog has fleas"
+// en`${n} unique__${thing}` => "2 unique things"
 function en(strings, ...values) {
   var s = strings[0];
   for (var i = 0; i < values.length; i++) {
     var n = values[i];
     var fragment = strings[i+1];
-    if (fragment.charAt(0) == '<')
+    if (typeof n == 'string') {
+      s += n + fragment;
+      continue;
+    }
+    if (i + 1 < values.length && fragment.match(/(^\s*|\S)$/)) {
+      s += n + plural(n, fragment + values[i+1]);
+      values[i+1] = '';
+    } else if (fragment.charAt(0) == '<')
       s += fragment.replace(/<(.*?)\|(.*)>/, (_, a, b) => (n == 1) ? a : b);
     else
       s += n + fragment.replace(/(\w+)/, (_, word) => plural(n, word));
