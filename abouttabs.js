@@ -13,8 +13,8 @@ function close(dict, key, keep_one) {
   tabs = dict[key];
   if (keep_one) {
     tabs.sort(function(a, b) {
-      time_a = a[0].lastAccess;
-      time_b = b[0].lastAccess;
+      time_a = a[0].lastAccessed;
+      time_b = b[0].lastAccessed;
       if (time_a > time_b)
         return -1;
       if (time_b > time_a)
