@@ -90,6 +90,58 @@ function replaceFirstChild(parent, newChild) {
   }
 }
 
+function createUniqueTabList(what, data, dupes, dedup) {
+  var li = document.createElement('li');
+  li.appendChild(document.createTextNode(en`${dupes.length} ${what} in more than 1 tab: `));
+  if (dedup) {
+    li.appendChild(create_close_link(data, undefined, true, '[Dedup]'));
+    li.appendChild(document.createTextNode(' '));
+  }
+  li.appendChild(create_close_link(data, undefined, false, '[Close]'));
+
+  var ul = document.createElement('ul');
+  dupes.sort(function cmp(a, b) {
+    if (data[a].length < data[b].length)
+      return 1;
+    if (data[a].length > data[b].length)
+      return -1;
+    return 0;
+  }).forEach(function(k) {
+    var sub_li = document.createElement('li');
+    sub_li.appendChild(document.createTextNode(en`${k} (${data[k].length} tab) `));
+    if (dedup) {
+      sub_li.appendChild(create_close_link(data, k, true, '[Dedup]'));
+      sub_li.appendChild(document.createTextNode(' '));
+    }
+    sub_li.appendChild(create_close_link(data, k, false, '[Close]'));
+    ul.appendChild(sub_li);
+  });
+  li.appendChild(ul);
+  return li;
+}
+
+function createTabList(what, data, dedup) {
+  var numUnique = 0;
+  for (key in data)
+    numUnique++;
+
+  var li = document.createElement('li');
+  li.appendChild(document.createTextNode(en`${numUnique} unique__${what}`));
+
+  var ul = document.createElement('ul');
+  li.appendChild(ul);
+
+  var dupes = [k for (k in data) if (data[k].length > 1)];
+  if (dupes.length) {
+    ul.appendChild(createUniqueTabList(what, data, dupes, dedup));
+    var sub_li = document.createElement('li');
+    sub_li.appendChild(document.createTextNode(en`${numUnique - dupes.length} other__${what}`));
+    ul.appendChild(sub_li);
+  }
+
+  return li;
+}
+
 function refresh() {
   var ul = document.getElementById("stats");
   while (ul.firstChild)
@@ -176,13 +228,11 @@ function refresh() {
   li.appendChild(document.createTextNode(en`${loadedTabs} tab ${loadedTabs}<has|have> been loaded`));
   ul.appendChild(li);
 
-  li = document.createElement("li");
-  li.appendChild(document.createTextNode(en`${uniqueUris} unique__address`));
-  ul.appendChild(li);
-
-  li = document.createElement("li");
-  li.appendChild(document.createTextNode(en`${uniqueHosts} unique__host`));
-  ul.appendChild(li);
+  for (key in schemes) {
+    var sub_li = document.createElement("li");
+    sub_li.appendChild(document.createTextNode(schemes[key]+ " " + key + ":"));
+    ul.appendChild(sub_li);
+  }
 
   if (blankTabs) {
     li = document.createElement("li");
@@ -190,65 +240,8 @@ function refresh() {
     ul.appendChild(li);
   }
 
-  for (key in schemes) {
-    var sub_li = document.createElement("li");
-    sub_li.appendChild(document.createTextNode(schemes[key]+ " " + key + ":"));
-    ul.appendChild(sub_li);
-  }
-
-  var uris_ = [uri for (uri in uris) if (uris[uri].length > 1)];
-  if (uris_.length) {
-    li = document.createElement("li");
-    li.appendChild(document.createTextNode(en`${uris_.length} address` + " in more than 1 tab: "));
-    li.appendChild(create_close_link(uris, undefined, true, "[Dedup]"));
-    li.appendChild(document.createTextNode(" "));
-    li.appendChild(create_close_link(uris, undefined, false, "[Close]"));
-    var sub_ul = document.createElement("ul");
-    var sub_li;
-    uris_.sort(function cmp(a, b) {
-      if (uris[a].length < uris[b].length)
-        return 1;
-      if (uris[a].length > uris[b].length)
-        return -1;
-      return 0;
-    }).forEach(function(uri) {
-      sub_li = document.createElement("li");
-      sub_li.appendChild(document.createTextNode(uri+" ("+uris[uri].length + " tabs) "));
-      sub_li.appendChild(create_close_link(uris, uri, true, "[Dedup]"));
-      sub_li.appendChild(document.createTextNode(" "));
-      sub_li.appendChild(create_close_link(uris, uri, false, "[Close]"));
-      sub_ul.appendChild(sub_li);
-    });
-    li.appendChild(sub_ul);
-    ul.appendChild(li);
-  }
-
-  var hosts_ = [host for (host in hosts) if (hosts[host].length > 1)];
-  if (hosts_.length) {
-    li = document.createElement("li");
-    li.appendChild(document.createTextNode(en`${hosts_.length} host in more than 1 tab:`));
-    var sub_ul = document.createElement("ul");
-    var sub_li;
-    hosts_.sort(function cmp(a, b) {
-      if (hosts[a].length < hosts[b].length)
-        return 1;
-      if (hosts[a].length > hosts[b].length)
-        return -1;
-      return 0;
-    }).forEach(function(host) {
-      sub_li = document.createElement("li");
-      var text = host+" (" + hosts[host].length + " tabs";
-      var keys = Object.keys(urihosts[host]);
-      if (keys.length < hosts[host].length)
-        text += ", " + keys.length + " unique";
-      text += ") ";
-      sub_li.appendChild(document.createTextNode(text));
-      sub_li.appendChild(create_close_link(hosts, host, false, "[Close]"));
-      sub_ul.appendChild(sub_li);
-    });
-    li.appendChild(sub_ul);
-    ul.appendChild(li);
-  }
+  ul.appendChild(createTabList('address', uris, true));
+  ul.appendChild(createTabList('host', hosts, false));
 }
 
 window.addEventListener("load", refresh, false);
