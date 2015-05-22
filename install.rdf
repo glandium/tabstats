@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
   <Description about="urn:mozilla:install-manifest">
     <em:id>tabstats@glandium.org</em:id>
-    <em:version>0.0.5</em:version>
+    <em:version>0.0.6</em:version>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
 
@@ -25,6 +25,8 @@
     <em:name>Tab Stats</em:name>
     <em:description>Provide some data about open tabs.</em:description>
     <em:creator>Mike Hommey &lt;mh@glandium.org&gt;</em:creator>
+    <em:contributor>Steve Fink %lt;sphink@gmail.com&gt;</em:contributor>
+
     <em:iconURL/>
     
     <em:optionsURL/>
