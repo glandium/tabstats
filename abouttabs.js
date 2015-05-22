@@ -16,8 +16,8 @@ function close(dict, key, keep_one) {
   var tabs = dict[key];
   if (keep_one) {
     tabs.sort(function(a, b) {
-      time_a = a[0].lastAccessed;
-      time_b = b[0].lastAccessed;
+      time_a = a.lastAccessed;
+      time_b = b.lastAccessed;
       if (time_a > time_b)
         return -1;
       if (time_b > time_a)
@@ -30,9 +30,7 @@ function close(dict, key, keep_one) {
       keep_one = false;
       continue;
     }
-    var browser;
-    [tab, browser] = tab;
-    browser.removeTab(tab);
+    tab.ownerGlobal.gBrowser.removeTab(tab);
   }
 }
 
@@ -119,7 +117,7 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
     var sub_div = document.createElement('div');
     sub_div.setAttribute('class', 'title');
 
-    var favicons = new Set((for (tab of data[k]) if (tab[0].image) tab[0].image));
+    var favicons = new Set((for (tab of data[k]) if (tab.image) tab.image));
 
     var img = document.createElementNS(kNSXUL, 'image');
     img.setAttribute('validate', 'never');
@@ -133,7 +131,7 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
 
     var title;
     if (keys_are_urls) {
-      var titles = new Set((for (tab of data[k]) tab[0].label));
+      var titles = new Set((for (tab of data[k]) tab.label));
       if (titles.size == 1) {
         [title] = titles.values();
       }
@@ -240,7 +238,6 @@ function refresh() {
     }
     if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
       loadedTabs++;
-    tab = [tab, win.gBrowser];
     if (uri.spec in uris)
       uris[uri.spec].push(tab);
     else
