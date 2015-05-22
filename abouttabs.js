@@ -10,7 +10,7 @@ function close(dict, key, keep_one) {
       close(dict, key, keep_one);
     return;
   }
-  tabs = dict[key];
+  var tabs = dict[key];
   if (keep_one) {
     tabs.sort(function(a, b) {
       time_a = a[0].lastAccessed;
@@ -22,11 +22,12 @@ function close(dict, key, keep_one) {
       return 0;
     });
   }
-  for (tab of tabs) {
+  for (var tab of tabs) {
     if (keep_one) {
       keep_one = false;
       continue;
     }
+    var browser;
     [tab, browser] = tab;
     browser.removeTab(tab);
   }
