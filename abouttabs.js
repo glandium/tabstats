@@ -200,21 +200,21 @@ function refresh() {
   while (windows.hasMoreElements()) {
     windowsCount++;
     var win = windows.getNext();
+    var win_tabs = win.gBrowser.tabs;
     try {
       var removingTabs = win.gBrowser._removingTabs;
-      tabs.push.apply(tabs, Array.filter(win.gBrowser.tabs, function (tab) {
+      win_tabs = Array.filter(win_tabs, function (tab) {
         return removingTabs.indexOf(tab) == -1;
-      }));
-    } catch(e) {
-      tabs.push.apply(tabs, win.gBrowser.tabs);
-    }
+      });
+    } catch(e) {}
     var groups = new Set();
-    tabs.forEach(function(tab) {
+    win_tabs.forEach(function(tab) {
       try {
         groups.add(JSON.parse(tab.__SS_extdata['tabview-tab']).groupID);
       } catch(e) {}
     });
-    tabGroupsCount += groups.size;
+    tabGroupsCount += Math.max(1, groups.size);
+    tabs.push.apply(tabs, win_tabs);
   }
 
   var parent = document.getElementById("tabs");
