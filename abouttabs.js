@@ -117,16 +117,17 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
     var sub_div = document.createElement('div');
     sub_div.setAttribute('class', 'title');
 
-    var favicons = new Set((for (tab of data[k]) if (tab.image) tab.image));
+    var favicons = new Set((for (tab of data[k]) tab.image));
 
     var img = document.createElementNS(kNSXUL, 'image');
     img.setAttribute('validate', 'never');
+    var src;
     if (favicons.size == 1) {
-      var [src] = favicons.values();
-      img.setAttribute('src', src);
-    } else {
-      img.setAttribute('src', kDefaultFavicon);
+      [src] = favicons.values();
     }
+    if (!src)
+      src = kDefaultFavicon;
+    img.setAttribute('src', src);
     div.appendChild(img);
 
     var title;
