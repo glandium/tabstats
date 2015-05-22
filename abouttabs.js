@@ -4,6 +4,9 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
+const kNSXUL = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
+const kDefaultFavicon = 'chrome://mozapps/skin/places/defaultFavicon.png';
+
 function close(dict, key, keep_one) {
   if (key === undefined) {
     for (key in dict)
@@ -91,16 +94,17 @@ function replaceFirstChild(parent, newChild) {
   }
 }
 
-function createUniqueTabList(what, data, dupes, dedup) {
+function createUniqueTabList(what, data, dupes, keys_are_urls) {
   var li = document.createElement('li');
   li.appendChild(document.createTextNode(en`${dupes.length} ${what} in more than 1 tab: `));
-  if (dedup) {
+  if (keys_are_urls) {
     li.appendChild(create_close_link(data, undefined, true, '[Dedup]'));
     li.appendChild(document.createTextNode(' '));
   }
   li.appendChild(create_close_link(data, undefined, false, '[Close]'));
 
   var ul = document.createElement('ul');
+  ul.setAttribute('class', plural(2, what));
   dupes.sort(function cmp(a, b) {
     if (data[a].length < data[b].length)
       return 1;
@@ -109,19 +113,61 @@ function createUniqueTabList(what, data, dupes, dedup) {
     return 0;
   }).forEach(function(k) {
     var sub_li = document.createElement('li');
-    sub_li.appendChild(document.createTextNode(en`${k} (${data[k].length} tab) `));
-    if (dedup) {
-      sub_li.appendChild(create_close_link(data, k, true, '[Dedup]'));
-      sub_li.appendChild(document.createTextNode(' '));
+    var div = document.createElement('div');
+    sub_li.appendChild(div);
+
+    var sub_div = document.createElement('div');
+    sub_div.setAttribute('class', 'title');
+
+    var favicons = new Set((for (tab of data[k]) if (tab[0].image) tab[0].image));
+
+    var img = document.createElementNS(kNSXUL, 'image');
+    img.setAttribute('validate', 'never');
+    if (favicons.size == 1) {
+      var [src] = favicons.values();
+      img.setAttribute('src', src);
+    } else {
+      img.setAttribute('src', kDefaultFavicon);
     }
-    sub_li.appendChild(create_close_link(data, k, false, '[Close]'));
+    div.appendChild(img);
+
+    var title;
+    if (keys_are_urls) {
+      var titles = new Set((for (tab of data[k]) tab[0].label));
+      if (titles.size == 1) {
+        [title] = titles.values();
+      }
+    }
+    if (!title)
+      title = k;
+
+    sub_div.appendChild(document.createTextNode(' ' + title));
+    div.appendChild(sub_div);
+
+    sub_div = document.createElement('div');
+    sub_div.setAttribute('class', 'actions');
+    sub_div.appendChild(document.createTextNode(en`(${data[k].length} tab) `));
+    if (keys_are_urls) {
+      sub_div.appendChild(create_close_link(data, k, true, '[Dedup]'));
+      sub_div.appendChild(document.createTextNode(' '));
+    }
+    sub_div.appendChild(create_close_link(data, k, false, '[Close]'));
+    div.appendChild(sub_div);
+
+    if (keys_are_urls && title != k) {
+      sub_div = document.createElement('div');
+      sub_div.setAttribute('class', 'url');
+      sub_div.appendChild(document.createTextNode(k));
+      sub_li.appendChild(sub_div);
+    }
+
     ul.appendChild(sub_li);
   });
   li.appendChild(ul);
   return li;
 }
 
-function createTabList(what, data, dedup) {
+function createTabList(what, data, keys_are_urls) {
   var numUnique = 0;
   for (key in data)
     numUnique++;
@@ -134,7 +180,7 @@ function createTabList(what, data, dedup) {
 
   var dupes = [k for (k in data) if (data[k].length > 1)];
   if (dupes.length) {
-    ul.appendChild(createUniqueTabList(what, data, dupes, dedup));
+    ul.appendChild(createUniqueTabList(what, data, dupes, keys_are_urls));
     var sub_li = document.createElement('li');
     sub_li.appendChild(document.createTextNode(en`${numUnique - dupes.length} other__${what}`));
     ul.appendChild(sub_li);

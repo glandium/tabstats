@@ -33,6 +33,45 @@ h1 {
   color: #313739;
   padding: 0em 0.3em;
 }
+
+image {
+  width: 16px;
+  min-width: 16px; /* Somehow this is required in the cases where text overflows in the title */
+  height: 16px;
+  margin-right: .2em;
+}
+
+#stats {
+  white-space: nowrap;
+}
+
+li > div {
+  display: flex;
+}
+
+li {
+  margin: .3em 0;
+}
+
+ul.hosts, ul.addresses {
+  list-style-type: none;
+  -moz-padding-start: 20px;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.url {
+  margin-left: 16px;
+  padding-left: .2em;
+  font-size: .8em;
+}
+
+.actions {
+  padding: 0em 0.2em;
+}
 </style>
 </head>
 <body>
