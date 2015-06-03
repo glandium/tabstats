@@ -65,6 +65,10 @@ function plural(n, noun) {
 // en`${n} dog ${n}<has|have> fleas` => "1 dog has fleas"
 // en`${n} unique__${thing}` => "2 unique things"
 function en(strings, ...values) {
+  return _en(strings, values);
+}
+
+function _en(strings, values) {
   var s = strings[0];
   for (var i = 0; i < values.length; i++) {
     var n = values[i];
@@ -84,6 +88,31 @@ function en(strings, ...values) {
   return s;
 }
 
+function format(str, values) {
+  if (str.indexOf('${') == -1) {
+    return str;
+  }
+  var template = str.split(/\$\{(\w+)\}/g);
+  if (template.length == 1) {
+    return str;
+  }
+  if (template.length == 3 && !template[0] && !template[2]) {
+    return values[template[1]];
+  }
+  var strings = [];
+  var vals = [];
+  var i = 0;
+  for (var s of template) {
+    if (++i % 2) {
+      strings.push(s);
+    } else {
+      var val = values[s];
+      vals.push(val === undefined ? '' : val);
+    }
+  }
+  return _en(strings, vals);
+}
+
 function replaceFirstChild(parent, newChild) {
   if (parent.firstChild) {
     parent.replaceChild(newChild, parent.firstChild);
@@ -94,7 +123,7 @@ function replaceFirstChild(parent, newChild) {
 
 function createUniqueTabList(what, data, dupes, keys_are_urls) {
   var li = document.createElement('li');
-  li.appendChild(document.createTextNode(en`${dupes.length} ${what} in more than 1 tab: `));
+  li.appendChild(document.createTextNode(format('${num} ${what} in more than 1 tab: ', {num: dupes.length, what: what})));
   if (keys_are_urls) {
     li.appendChild(create_close_link(data, undefined, true, '[Dedup]'));
     li.appendChild(document.createTextNode(' '));
@@ -145,7 +174,7 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
 
     sub_div = document.createElement('div');
     sub_div.setAttribute('class', 'actions');
-    sub_div.appendChild(document.createTextNode(en`(${data[k].length} tab) `));
+    sub_div.appendChild(document.createTextNode(format('(${num} tab) ', {num: data[k].length})));
     if (keys_are_urls) {
       sub_div.appendChild(create_close_link(data, k, true, '[Dedup]'));
       sub_div.appendChild(document.createTextNode(' '));
@@ -172,7 +201,7 @@ function createTabList(what, data, keys_are_urls) {
     numUnique++;
 
   var li = document.createElement('li');
-  li.appendChild(document.createTextNode(en`${numUnique} unique__${what}`));
+  li.appendChild(document.createTextNode(format('${numUnique} unique__${what}', {numUnique: numUnique, what: what})));
 
   var ul = document.createElement('ul');
   li.appendChild(ul);
@@ -181,7 +210,7 @@ function createTabList(what, data, keys_are_urls) {
   if (dupes.length) {
     ul.appendChild(createUniqueTabList(what, data, dupes, keys_are_urls));
     var sub_li = document.createElement('li');
-    sub_li.appendChild(document.createTextNode(en`${numUnique - dupes.length} other__${what}`));
+    sub_li.appendChild(document.createTextNode(format('${num} other__${what}', {num: numUnique - dupes.length, what: what})));
     ul.appendChild(sub_li);
   }
 
@@ -217,13 +246,13 @@ function refresh() {
   }
 
   var parent = document.getElementById("tabs");
-  replaceFirstChild(parent, document.createTextNode(en`${tabs.length} tab`));
+  replaceFirstChild(parent, document.createTextNode(format('${num} tab', {num: tabs.length})));
 
   parent = document.getElementById("windows");
-  replaceFirstChild(parent, document.createTextNode(en`${windowsCount} window`));
+  replaceFirstChild(parent, document.createTextNode(format('${windowsCount} window', {windowsCount: windowsCount})));
 
   parent = document.getElementById("groups");
-  replaceFirstChild(parent, document.createTextNode(en`${tabGroupsCount} tab__group`));
+  replaceFirstChild(parent, document.createTextNode(format('${tabGroupsCount} tab__group', {tabGroupsCount: tabGroupsCount})));
 
   var uris = {};
   var hosts = {};
@@ -270,7 +299,7 @@ function refresh() {
     uniqueHosts++;
 
   li = document.createElement("li");
-  li.appendChild(document.createTextNode(en`${loadedTabs} tab ${loadedTabs}<has|have> been loaded`));
+  li.appendChild(document.createTextNode(format('${loadedTabs} tab ${loadedTabs}<has|have> been loaded', {loadedTabs: loadedTabs})));
   ul.appendChild(li);
 
   for (key in schemes) {
@@ -281,7 +310,7 @@ function refresh() {
 
   if (blankTabs) {
     li = document.createElement("li");
-    li.appendChild(document.createTextNode(en`${blankTabs} empty__tab`));
+    li.appendChild(document.createTextNode(format('${blankTabs} empty__tab', {blankTabs: blankTabs})));
     ul.appendChild(li);
   }
 
