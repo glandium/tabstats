@@ -212,11 +212,14 @@ function refresh() {
   li.appendChild(document.createTextNode(format('${loadedTabs} tab ${loadedTabs}<has|have> been loaded', {loadedTabs: loadedTabs})));
   ul.appendChild(li);
 
-  for (key in schemes) {
-    var sub_li = document.createElement("li");
-    sub_li.appendChild(document.createTextNode(schemes[key]+ " " + key + ":"));
-    ul.appendChild(sub_li);
+  li = document.createElement("li");
+  li.setAttribute("class", "schemes");
+  for (key of Object.keys(schemes).sort()) {
+    var span = document.createElement("span");
+    span.appendChild(document.createTextNode(schemes[key]+ " " + key + ":"));
+    li.appendChild(span);
   }
+  ul.appendChild(li);
 
   if (blankTabs) {
     li = document.createElement("li");
