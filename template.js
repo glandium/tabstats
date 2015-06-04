@@ -75,34 +75,10 @@ function plural(n, noun) {
   return noun + "s";
 }
 
-// en`${n} dog ${k} horse` => "2 dogs 1 horse"
-// en`${n} happy__dog` => "4 happy dogs"
-// en`${n} dog ${n}<has|have> fleas` => "1 dog has fleas"
-// en`${n} unique__${thing}` => "2 unique things"
-function en(strings, ...values) {
-  return _en(strings, values);
-}
-
-function _en(strings, values) {
-  var s = strings[0];
-  for (var i = 0; i < values.length; i++) {
-    var n = values[i];
-    var fragment = strings[i+1];
-    if (typeof n == 'string') {
-      s += n + fragment;
-      continue;
-    }
-    if (i + 1 < values.length && fragment.match(/(^\s*|\S)$/)) {
-      s += n + plural(n, fragment + values[i+1]);
-      values[i+1] = '';
-    } else if (fragment.charAt(0) == '<')
-      s += fragment.replace(/<(.*?)\|(.*)>/, (_, a, b) => (n == 1) ? a : b);
-    else
-      s += n + fragment.replace(/(\w+)/, (_, word) => plural(n, word));
-  }
-  return s;
-}
-
+// format('${n} dog ${k} horse', {n: 2, k: 1}) => "2 dogs 1 horse"
+// format('${n} happy__dog', {n: 4}) => "4 happy dogs"
+// format('${n} dog ${n}<has|have> fleas', {n: 1}) => "1 dog has fleas"
+// format('${n} unique__${thing}', {n: 2, thing: 'thing'} => "2 unique things"
 function format(str, values) {
   if (str.indexOf('${') == -1) {
     return str;
@@ -114,18 +90,23 @@ function format(str, values) {
   if (template.length == 3 && !template[0] && !template[2]) {
     return values[template[1]];
   }
-  var strings = [];
-  var vals = [];
-  var i = 0;
-  for (var s of template) {
-    if (++i % 2) {
-      strings.push(s);
-    } else {
-      var val = values[s];
-      vals.push(val === undefined ? '' : val);
+  var s = template[0]
+  for (var i = 1; i < template.length; i += 2) {
+    var n = template[i] ? values[template[i]] : '';
+    var fragment = template[i+1];
+    if (typeof n == 'string') {
+      s += n + fragment;
+      continue;
     }
+    if (i + 2 < template.length && fragment.match(/(^\s*|\S)$/)) {
+      s += n + plural(n, fragment + values[template[i+2]]);
+      template[i+2] = '';
+    } else if (fragment.charAt(0) == '<')
+      s += fragment.replace(/<(.*?)\|(.*)>/, (_, a, b) => (n == 1) ? a : b);
+    else
+      s += n + fragment.replace(/(\w+)/, (_, word) => plural(n, word));
   }
-  return _en(strings, vals);
+  return s;
 }
 
 function init() {
