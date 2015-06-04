@@ -146,7 +146,7 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
     var sub_div = document.createElement('div');
     sub_div.setAttribute('class', 'title');
 
-    var favicons = new Set((for (tab of data[k]) tab.image));
+    var favicons = new Set((tab.image for (tab of data[k])));
 
     var img = document.createElementNS(kNSXUL, 'image');
     img.setAttribute('validate', 'never');
@@ -161,7 +161,7 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
 
     var title;
     if (keys_are_urls) {
-      var titles = new Set((for (tab of data[k]) tab.label));
+      var titles = new Set((tab.label for (tab of data[k])));
       if (titles.size == 1) {
         [title] = titles.values();
       }
