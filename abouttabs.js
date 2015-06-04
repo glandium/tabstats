@@ -4,7 +4,6 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
-const kNSXUL = 'http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul';
 const kDefaultFavicon = 'chrome://mozapps/skin/places/defaultFavicon.png';
 
 function close(dict, key, keep_one) {
@@ -34,83 +33,19 @@ function close(dict, key, keep_one) {
   }
 }
 
-function create_close_link(dict, key, keep_one, label) {
-  var a = document.createElement("a");
-  a.href = '#';
-  a.onclick = function () {
+function create_event_handler(dict, key, keep_one) {
+  return function () {
     close(dict, key, keep_one);
     refresh();
   }
+}
+
+function create_close_link(dict, key, keep_one, label) {
+  var a = document.createElement("a");
+  a.href = '#';
+  a.onclick = create_event_handler(dict, key, keep_one);
   a.appendChild(document.createTextNode(label));
   return a;
-}
-
-function plural(n, noun) {
-  noun = noun.replace(/__/g, " ");
-  if (n == 1)
-    return noun;
-  if (noun.endsWith("s"))
-    return noun + "es";
-  if (noun.endsWith("sh"))
-    return noun;
-  if (noun.endsWith("ch"))
-    return noun + "es";
-  if (noun.endsWith("x"))
-    return noun + "es";
-  return noun + "s";
-}
-
-// en`${n} dog ${k} horse` => "2 dogs 1 horse"
-// en`${n} happy__dog` => "4 happy dogs"
-// en`${n} dog ${n}<has|have> fleas` => "1 dog has fleas"
-// en`${n} unique__${thing}` => "2 unique things"
-function en(strings, ...values) {
-  return _en(strings, values);
-}
-
-function _en(strings, values) {
-  var s = strings[0];
-  for (var i = 0; i < values.length; i++) {
-    var n = values[i];
-    var fragment = strings[i+1];
-    if (typeof n == 'string') {
-      s += n + fragment;
-      continue;
-    }
-    if (i + 1 < values.length && fragment.match(/(^\s*|\S)$/)) {
-      s += n + plural(n, fragment + values[i+1]);
-      values[i+1] = '';
-    } else if (fragment.charAt(0) == '<')
-      s += fragment.replace(/<(.*?)\|(.*)>/, (_, a, b) => (n == 1) ? a : b);
-    else
-      s += n + fragment.replace(/(\w+)/, (_, word) => plural(n, word));
-  }
-  return s;
-}
-
-function format(str, values) {
-  if (str.indexOf('${') == -1) {
-    return str;
-  }
-  var template = str.split(/\$\{(\w+)\}/g);
-  if (template.length == 1) {
-    return str;
-  }
-  if (template.length == 3 && !template[0] && !template[2]) {
-    return values[template[1]];
-  }
-  var strings = [];
-  var vals = [];
-  var i = 0;
-  for (var s of template) {
-    if (++i % 2) {
-      strings.push(s);
-    } else {
-      var val = values[s];
-      vals.push(val === undefined ? '' : val);
-    }
-  }
-  return _en(strings, vals);
 }
 
 function replaceFirstChild(parent, newChild) {
@@ -139,25 +74,13 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
       return -1;
     return 0;
   }).forEach(function(k) {
-    var sub_li = document.createElement('li');
-    var div = document.createElement('div');
-    sub_li.appendChild(div);
-
-    var sub_div = document.createElement('div');
-    sub_div.setAttribute('class', 'title');
-
     var favicons = new Set((tab.image for (tab of data[k])));
-
-    var img = document.createElementNS(kNSXUL, 'image');
-    img.setAttribute('validate', 'never');
     var src;
     if (favicons.size == 1) {
       [src] = favicons.values();
     }
     if (!src)
       src = kDefaultFavicon;
-    img.setAttribute('src', src);
-    div.appendChild(img);
 
     var title;
     if (keys_are_urls) {
@@ -169,27 +92,14 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
     if (!title)
       title = k;
 
-    sub_div.appendChild(document.createTextNode(' ' + title));
-    div.appendChild(sub_div);
-
-    sub_div = document.createElement('div');
-    sub_div.setAttribute('class', 'actions');
-    sub_div.appendChild(document.createTextNode(format('(${num} tab) ', {num: data[k].length})));
-    if (keys_are_urls) {
-      sub_div.appendChild(create_close_link(data, k, true, '[Dedup]'));
-      sub_div.appendChild(document.createTextNode(' '));
-    }
-    sub_div.appendChild(create_close_link(data, k, false, '[Close]'));
-    div.appendChild(sub_div);
-
-    if (keys_are_urls && title != k) {
-      sub_div = document.createElement('div');
-      sub_div.setAttribute('class', 'url');
-      sub_div.appendChild(document.createTextNode(k));
-      sub_li.appendChild(sub_div);
-    }
-
-    ul.appendChild(sub_li);
+    ul.appendChild(templates.duplicates.instantiate(document, {
+      'title': title,
+      'num_tabs': data[k].length,
+      'url': (keys_are_urls && title != k) ? k : undefined,
+      'favicon': src,
+      'dedup': keys_are_urls ? create_event_handler(data, k, true) : undefined,
+      'close': create_event_handler(data, k, false),
+    }));
   });
   li.appendChild(ul);
   return li;
