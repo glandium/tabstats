@@ -34,8 +34,13 @@ Template.prototype = {
       }
       for (var n of node.attributes) {
         if (n.name.startsWith('on')) {
-          newNode.addEventListener(n.name.slice(2),
-            format(n.value, values), false);
+          var handler = format(n.value, values);
+          if (typeof handler == 'string') {
+            newNode.setAttribute(n.name, handler);
+          } else {
+            newNode.addEventListener(n.name.slice(2),
+              format(n.value, values), false);
+          }
         } else if (n.name != 'template-if') {
           newNode.setAttribute(n.name, format(n.value, values));
         }

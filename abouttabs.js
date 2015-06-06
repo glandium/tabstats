@@ -128,9 +128,6 @@ function createTabList(what, data, keys_are_urls) {
 }
 
 function refresh() {
-  var ul = document.getElementById("stats");
-  while (ul.firstChild)
-    ul.removeChild(ul.firstChild);
   var windows = Services.wm.getEnumerator("navigator:browser");
   var windowsCount = 0;
   var tabGroupsCount = 0;
@@ -155,14 +152,17 @@ function refresh() {
     tabs.push.apply(tabs, win_tabs);
   }
 
-  var parent = document.getElementById("tabs");
-  replaceFirstChild(parent, document.createTextNode(format('${num}_tab', {num: tabs.length})));
+  var body = document.body;
 
-  parent = document.getElementById("windows");
-  replaceFirstChild(parent, document.createTextNode(format('${windowsCount}_window', {windowsCount: windowsCount})));
+  while (body.firstChild)
+    body.removeChild(body.firstChild);
 
-  parent = document.getElementById("groups");
-  replaceFirstChild(parent, document.createTextNode(format('${tabGroupsCount}_tab_group', {tabGroupsCount: tabGroupsCount})));
+  var data = {
+    tabCount: tabs.length,
+    windowsCount: windowsCount,
+    tabGroupsCount: tabGroupsCount,
+  }
+  body.appendChild(templates.main.instantiate(document, data));
 
   var uris = {};
   var hosts = {};
@@ -210,6 +210,7 @@ function refresh() {
 
   li = document.createElement("li");
   li.appendChild(document.createTextNode(format('${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded', {loadedTabs: loadedTabs})));
+  var ul = document.getElementById("stats");
   ul.appendChild(li);
 
   li = document.createElement("li");

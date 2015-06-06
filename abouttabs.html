@@ -80,16 +80,19 @@ li.schemes span {
 </style>
 </head>
 <body>
-<div id="top">
-<h1 id="tabs"></h1>
-<button onclick="refresh()">Refresh</button>
-</div>
-<div id="bar">
-<span id="windows"></span>
-<span id="groups"></span>
-</div>
-<ul id="stats">
-</ul>
+
+<template id="main">
+  <div id="top">
+    <h1>${tabCount}_tab</h1>
+    <button onclick="refresh()">Refresh</button>
+  </div>
+  <div id="bar">
+    <span>${windowsCount}_window</span>
+    <span>${tabGroupsCount}_tab_group</span>
+  </div>
+  <ul id="stats">
+  </ul>
+</template>
 
 <template id="duplicates">
   <li>
