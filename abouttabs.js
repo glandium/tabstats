@@ -168,7 +168,6 @@ function refresh() {
 
   var uris = {};
   var hosts = {};
-  var urihosts = {};
   var schemes = {};
   tabs.forEach(function(tab) {
     var uri = tab.linkedBrowser.currentURI;
@@ -188,12 +187,7 @@ function refresh() {
           hosts[uri.host].push(tab);
         else {
           hosts[uri.host] = [tab];
-          urihosts[uri.host] = {};
         }
-        if (uri.spec in urihosts[uri.host])
-          urihosts[uri.host][uri.spec]++;
-        else
-          urihosts[uri.host][uri.spec] = 1;
       }
     } catch(e) {}
     if (uri.scheme in schemes)
