@@ -63,7 +63,7 @@ Template.prototype = {
         if (text && typeof text != 'string') {
           text = JSON.stringify(text);
         }
-        if (text) {
+        if (text && text.match(/\S/)) {
           newNode.appendChild(doc.createTextNode(text));
         }
       }
