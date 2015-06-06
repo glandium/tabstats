@@ -58,7 +58,7 @@ function replaceFirstChild(parent, newChild) {
 
 function createUniqueTabList(what, data, dupes, keys_are_urls) {
   var li = document.createElement('li');
-  li.appendChild(document.createTextNode(format('${num} ${what} in more than 1 tab: ', {num: dupes.length, what: what})));
+  li.appendChild(document.createTextNode(format('${num}_${what} in more than 1 tab: ', {num: dupes.length, what: what})));
   if (keys_are_urls) {
     li.appendChild(create_close_link(data, undefined, true, '[Dedup]'));
     li.appendChild(document.createTextNode(' '));
@@ -111,7 +111,7 @@ function createTabList(what, data, keys_are_urls) {
     numUnique++;
 
   var li = document.createElement('li');
-  li.appendChild(document.createTextNode(format('${numUnique} unique__${what}', {numUnique: numUnique, what: what})));
+  li.appendChild(document.createTextNode(format('${numUnique}_unique_${what}', {numUnique: numUnique, what: what})));
 
   var ul = document.createElement('ul');
   li.appendChild(ul);
@@ -120,7 +120,7 @@ function createTabList(what, data, keys_are_urls) {
   if (dupes.length) {
     ul.appendChild(createUniqueTabList(what, data, dupes, keys_are_urls));
     var sub_li = document.createElement('li');
-    sub_li.appendChild(document.createTextNode(format('${num} other__${what}', {num: numUnique - dupes.length, what: what})));
+    sub_li.appendChild(document.createTextNode(format('${num}_other_${what}', {num: numUnique - dupes.length, what: what})));
     ul.appendChild(sub_li);
   }
 
@@ -156,13 +156,13 @@ function refresh() {
   }
 
   var parent = document.getElementById("tabs");
-  replaceFirstChild(parent, document.createTextNode(format('${num} tab', {num: tabs.length})));
+  replaceFirstChild(parent, document.createTextNode(format('${num}_tab', {num: tabs.length})));
 
   parent = document.getElementById("windows");
-  replaceFirstChild(parent, document.createTextNode(format('${windowsCount} window', {windowsCount: windowsCount})));
+  replaceFirstChild(parent, document.createTextNode(format('${windowsCount}_window', {windowsCount: windowsCount})));
 
   parent = document.getElementById("groups");
-  replaceFirstChild(parent, document.createTextNode(format('${tabGroupsCount} tab__group', {tabGroupsCount: tabGroupsCount})));
+  replaceFirstChild(parent, document.createTextNode(format('${tabGroupsCount}_tab_group', {tabGroupsCount: tabGroupsCount})));
 
   var uris = {};
   var hosts = {};
@@ -209,7 +209,7 @@ function refresh() {
     uniqueHosts++;
 
   li = document.createElement("li");
-  li.appendChild(document.createTextNode(format('${loadedTabs} tab ${loadedTabs}<has|have> been loaded', {loadedTabs: loadedTabs})));
+  li.appendChild(document.createTextNode(format('${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded', {loadedTabs: loadedTabs})));
   ul.appendChild(li);
 
   li = document.createElement("li");
@@ -223,7 +223,7 @@ function refresh() {
 
   if (blankTabs) {
     li = document.createElement("li");
-    li.appendChild(document.createTextNode(format('${blankTabs} empty__tab', {blankTabs: blankTabs})));
+    li.appendChild(document.createTextNode(format('${blankTabs}_empty_tab', {blankTabs: blankTabs})));
     ul.appendChild(li);
   }
 

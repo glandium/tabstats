@@ -61,7 +61,6 @@ Template.prototype = {
 };
 
 function plural(n, noun) {
-  noun = noun.replace(/__/g, " ");
   if (n == 1)
     return noun;
   if (noun.endsWith("s"))
@@ -75,10 +74,13 @@ function plural(n, noun) {
   return noun + "s";
 }
 
-// format('${n} dog ${k} horse', {n: 2, k: 1}) => "2 dogs 1 horse"
-// format('${n} happy__dog', {n: 4}) => "4 happy dogs"
-// format('${n} dog ${n}<has|have> fleas', {n: 1}) => "1 dog has fleas"
-// format('${n} unique__${thing}', {n: 2, thing: 'thing'} => "2 unique things"
+// format('${n}_dog ${k}_horse', {n: 2, k: 1}) => "2 dogs 1 horse"
+// format('${n}_happy_dog', {n: 4}) => "4 happy dogs"
+// format('${n}_dog ${n}?(has|have) fleas', {n: 1}) => "1 dog has fleas"
+// format('${n}_dog ${n}?(has|have) fleas', {n: 2}) => "2 dogs have fleas"
+// format('${n}_unique_${thing}', {n: 2, thing: 'thing'}) => "2 unique things"
+// format('${foo} is ${bar}', {foo: 'a', bar: 'b'}) => "a is b"
+// format('${n} ${bar}', {n: 2, bar: 'http'}) => "2 http"
 function format(str, values) {
   if (str.indexOf('${') == -1) {
     return str;
@@ -98,13 +100,20 @@ function format(str, values) {
       s += n + fragment;
       continue;
     }
-    if (i + 2 < template.length && fragment.match(/(^\s*|\S)$/)) {
-      s += n + plural(n, fragment + values[template[i+2]]);
-      template[i+2] = '';
-    } else if (fragment.charAt(0) == '<')
-      s += fragment.replace(/<(.*?)\|(.*)>/, (_, a, b) => (n == 1) ? a : b);
-    else
-      s += n + fragment.replace(/(\w+)/, (_, word) => plural(n, word));
+    if (fragment.charAt(0) == '_') {
+      if (fragment.slice(-1) == '_') {
+        s += n + fragment.replace(/_/g, ' ')
+               + plural(n, values[template[i+2]]);
+        template[i+2] = '';
+      } else {
+        s += n + fragment.replace(/^([\w_]*)([^_\W])+/, (_, before, word) =>
+                                  before.replace(/_/g, ' ') + plural(n, word));
+      }
+    } else if (fragment.charAt(0) == '?') {
+      s += fragment.replace(/\?\((.*?)\|(.*)\)/, (_, a, b) => (n == 1) ? a : b);
+    } else {
+      s += n + fragment;
+    }
   }
   return s;
 }
