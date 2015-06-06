@@ -41,7 +41,7 @@ Template.prototype = {
             newNode.addEventListener(n.name.slice(2),
               format(n.value, values), false);
           }
-        } else if (n.name != 'template-if') {
+        } else if (!n.name.startsWith('template')) {
           var value = format(n.value, values);
           if (value && typeof value != 'string') {
             value = JSON.stringify(value);
@@ -65,6 +65,30 @@ Template.prototype = {
         }
         if (text && text.match(/\S/)) {
           newNode.appendChild(doc.createTextNode(text));
+        }
+      }
+    }
+    if (node.nodeType == Node.ELEMENT_NODE) {
+      var template = node.getAttribute('template');
+      if (template) {
+        template = templates[template];
+      }
+      if (template) {
+        var data = node.getAttribute('template-data');
+        if (data) {
+          data = format(data, values);
+        } else {
+          data = values;
+        }
+        if (node.getAttribute('template-iterate')) {
+          for (var key in data) {
+            newNode.appendChild(template.instantiate(doc, {
+              key: key,
+              value: data[key],
+            }));
+          }
+        } else {
+          newNode.appendChild(template.instantiate(doc, data));
         }
       }
     }

@@ -162,6 +162,7 @@ function refresh() {
     windowsCount: windowsCount,
     tabGroupsCount: tabGroupsCount,
     loadedTabs: 0,
+    schemes: {},
   }
 
   var uris = {};
@@ -206,19 +207,13 @@ function refresh() {
     uniqueUris++;
   for (key in hosts)
     uniqueHosts++;
+  for (key of Object.keys(schemes).sort()) {
+    data.schemes[key] = schemes[key];
+  }
 
   body.appendChild(templates.main.instantiate(document, data));
 
   var ul = document.getElementById("stats");
-
-  li = document.createElement("li");
-  li.setAttribute("class", "schemes");
-  for (key of Object.keys(schemes).sort()) {
-    var span = document.createElement("span");
-    span.appendChild(document.createTextNode(schemes[key]+ " " + key + ":"));
-    li.appendChild(span);
-  }
-  ul.appendChild(li);
 
   if (blankTabs) {
     li = document.createElement("li");
