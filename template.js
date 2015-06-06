@@ -42,7 +42,11 @@ Template.prototype = {
               format(n.value, values), false);
           }
         } else if (n.name != 'template-if') {
-          newNode.setAttribute(n.name, format(n.value, values));
+          var value = format(n.value, values);
+          if (value && typeof value != 'string') {
+            value = JSON.stringify(value);
+          }
+          newNode.setAttribute(n.name, value ? value : '');
         }
       }
     } else if (node.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
@@ -56,6 +60,9 @@ Template.prototype = {
         }
       } else if (n.nodeType == Node.TEXT_NODE) {
         var text = format(n.nodeValue, values);
+        if (text && typeof text != 'string') {
+          text = JSON.stringify(text);
+        }
         if (text) {
           newNode.appendChild(doc.createTextNode(text));
         }
