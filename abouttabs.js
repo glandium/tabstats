@@ -106,9 +106,7 @@ function createUniqueTabList(what, data, dupes, keys_are_urls) {
 }
 
 function createTabList(what, data, keys_are_urls) {
-  var numUnique = 0;
-  for (key in data)
-    numUnique++;
+  var numUnique = data.length;
 
   var li = document.createElement('li');
   li.appendChild(document.createTextNode(format('${numUnique}_unique_${what}', {numUnique: numUnique, what: what})));
@@ -116,16 +114,42 @@ function createTabList(what, data, keys_are_urls) {
   var ul = document.createElement('ul');
   li.appendChild(ul);
 
-  var dupes = [k for (k in data) if (data[k].length > 1)];
-  if (dupes.length) {
-    ul.appendChild(createUniqueTabList(what, data, dupes, keys_are_urls));
+  if (data.numDupes) {
+    ul.appendChild(createUniqueTabList(what, data.dupes, [k for (k in data.dupes)], keys_are_urls));
     var sub_li = document.createElement('li');
-    sub_li.appendChild(document.createTextNode(format('${num}_other_${what}', {num: numUnique - dupes.length, what: what})));
+    sub_li.appendChild(document.createTextNode(format('${num}_other_${what}', {num: data.numUnique, what: what})));
     ul.appendChild(sub_li);
   }
 
   return li;
 }
+
+var TabList = function () {
+  this.unique = {};
+  this.numUnique = 0;
+  this.dupes = {};
+  this.numDupes = 0;
+};
+
+TabList.prototype = {
+  get length () {
+    return this.numUnique + this.numDupes;
+  },
+
+  add: function(key, tab) {
+    if (this.unique && key in this.unique) {
+      this.dupes[key] = [this.unique[key], tab];
+      this.numDupes++;
+      delete this.unique[key];
+      this.numUnique--;
+    } else if (this.dupes && key in this.dupes) {
+      this.dupes[key].push(tab);
+    } else {
+      this.unique[key] = tab;
+      this.numUnique++;
+    }
+  },
+};
 
 function refresh() {
   var windows = Services.wm.getEnumerator("navigator:browser");
@@ -166,8 +190,8 @@ function refresh() {
     schemes: {},
   }
 
-  var uris = {};
-  var hosts = {};
+  var uris = new TabList();
+  var hosts = new TabList();
   var schemes = {};
   tabs.forEach(function(tab) {
     var uri = tab.linkedBrowser.currentURI;
@@ -177,17 +201,10 @@ function refresh() {
     }
     if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
       data.loadedTabs++;
-    if (uri.spec in uris)
-      uris[uri.spec].push(tab);
-    else
-      uris[uri.spec] = [tab];
+    uris.add(uri.spec, tab);
     try {
       if (uri.host) {
-        if (uri.host in hosts)
-          hosts[uri.host].push(tab);
-        else {
-          hosts[uri.host] = [tab];
-        }
+        hosts.add(uri.host, tab);
       }
     } catch(e) {}
     if (uri.scheme in schemes)
@@ -195,12 +212,6 @@ function refresh() {
     else
       schemes[uri.scheme] = 1;
   });
-  var uniqueUris = 0;
-  var uniqueHosts = 0;
-  for (key in uris)
-    uniqueUris++;
-  for (key in hosts)
-    uniqueHosts++;
   for (key of Object.keys(schemes).sort()) {
     data.schemes[key] = schemes[key];
   }
