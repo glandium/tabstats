@@ -161,6 +161,7 @@ function refresh() {
     tabCount: tabs.length,
     windowsCount: windowsCount,
     tabGroupsCount: tabGroupsCount,
+    blankTabs: 0,
     loadedTabs: 0,
     schemes: {},
   }
@@ -169,11 +170,10 @@ function refresh() {
   var hosts = {};
   var urihosts = {};
   var schemes = {};
-  var blankTabs = 0;
   tabs.forEach(function(tab) {
     var uri = tab.linkedBrowser.currentURI;
     if (uri.spec == "about:blank") {
-      blankTabs++
+      data.blankTabs++
       return;
     }
     if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
@@ -214,12 +214,6 @@ function refresh() {
   body.appendChild(templates.main.instantiate(document, data));
 
   var ul = document.getElementById("stats");
-
-  if (blankTabs) {
-    li = document.createElement("li");
-    li.appendChild(document.createTextNode(format('${blankTabs}_empty_tab', {blankTabs: blankTabs})));
-    ul.appendChild(li);
-  }
 
   ul.appendChild(createTabList('address', uris, true));
   ul.appendChild(createTabList('host', hosts, false));
