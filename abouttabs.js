@@ -161,15 +161,14 @@ function refresh() {
     tabCount: tabs.length,
     windowsCount: windowsCount,
     tabGroupsCount: tabGroupsCount,
+    loadedTabs: 0,
   }
-  body.appendChild(templates.main.instantiate(document, data));
 
   var uris = {};
   var hosts = {};
   var urihosts = {};
   var schemes = {};
   var blankTabs = 0;
-  var loadedTabs = 0;
   tabs.forEach(function(tab) {
     var uri = tab.linkedBrowser.currentURI;
     if (uri.spec == "about:blank") {
@@ -177,7 +176,7 @@ function refresh() {
       return;
     }
     if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
-      loadedTabs++;
+      data.loadedTabs++;
     if (uri.spec in uris)
       uris[uri.spec].push(tab);
     else
@@ -208,10 +207,9 @@ function refresh() {
   for (key in hosts)
     uniqueHosts++;
 
-  li = document.createElement("li");
-  li.appendChild(document.createTextNode(format('${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded', {loadedTabs: loadedTabs})));
+  body.appendChild(templates.main.instantiate(document, data));
+
   var ul = document.getElementById("stats");
-  ul.appendChild(li);
 
   li = document.createElement("li");
   li.setAttribute("class", "schemes");
