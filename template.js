@@ -110,6 +110,18 @@ function plural(n, noun) {
   return noun + "s";
 }
 
+function _get_value(values, expr) {
+  if (expr.charAt(0) == '!') {
+    return !_get_value(values, expr.slice(1));
+  }
+  var name = expr.split('.', 1)[0];
+  if (name == expr) {
+    return values[expr];
+  } else {
+    return _get_value(values[name], expr.slice(name.length + 1));
+  }
+}
+
 // format('${n}_dog ${k}_horse', {n: 2, k: 1}) => "2 dogs 1 horse"
 // format('${n}_happy_dog', {n: 4}) => "4 happy dogs"
 // format('${n}_dog ${n}?(has|have) fleas', {n: 1}) => "1 dog has fleas"
@@ -121,16 +133,16 @@ function format(str, values) {
   if (str.indexOf('${') == -1) {
     return str;
   }
-  var template = str.split(/\$\{(\w+)\}/g);
+  var template = str.split(/\$\{(\!*[\w\.]+)\}/g);
   if (template.length == 1) {
     return str;
   }
   if (template.length == 3 && !template[0] && !template[2]) {
-    return values[template[1]];
+    return _get_value(values, template[1]);
   }
   var s = template[0]
   for (var i = 1; i < template.length; i += 2) {
-    var n = template[i] ? values[template[i]] : '';
+    var n = template[i] ? _get_value(values, template[i]) : '';
     var fragment = template[i+1];
     if (typeof n == 'string') {
       s += n + fragment;
@@ -139,7 +151,7 @@ function format(str, values) {
     if (fragment.charAt(0) == '_') {
       if (fragment.slice(-1) == '_') {
         s += n + fragment.replace(/_/g, ' ')
-               + plural(n, values[template[i+2]]);
+               + plural(n, _get_value(values, template[i+2]));
         template[i+2] = '';
       } else {
         s += n + fragment.replace(/^([\w_]*)([^_\W])+/, (_, before, word) =>
