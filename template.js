@@ -74,13 +74,17 @@ Template.prototype = {
         template = templates[template];
       }
       if (template) {
-        var data = node.getAttribute('template-data');
+        var iterate = node.getAttribute('template-iterate');
+        var data = iterate;
+        if (!data) {
+          data = node.getAttribute('template-data');
+        }
         if (data) {
           data = format(data, values);
         } else {
           data = values;
         }
-        if (node.getAttribute('template-iterate')) {
+        if (iterate) {
           for (var item of data()) {
             newNode.appendChild(template.instantiate(doc, item));
           }
