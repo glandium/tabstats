@@ -108,10 +108,8 @@ TabCollection.prototype = {
       var tabArrayType = this.what == 'address' ? DedupableTabArray : TabArray;
       var dupes = this.dupes[key] = new tabArrayType(otherTab, tab);
       dupes.favicon = tab.favicon == otherTab.favicon ? tab.favicon : undefined;
-      if (this.what == 'address') {
-        dupes.title = tab.title == otherTab.title ? tab.title : undefined;
-        dupes.url = tab.url;
-      }
+      dupes.title = tab.title == otherTab.title ? tab.title : undefined;
+      dupes.url = tab.url;
       this.numDupes++;
       delete this.unique[key];
       this.numUnique--;
@@ -200,6 +198,11 @@ function refresh() {
     data.uris.add(tab.url, tab);
     try {
       if (uri.host) {
+        var tab = {
+          favicon: t.image,
+          title: uri.host,
+          obj: t,
+        }
         data.hosts.add(uri.host, tab);
       }
     } catch(e) {}

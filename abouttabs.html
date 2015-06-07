@@ -121,8 +121,7 @@ li.schemes span {
     <div>
       <xul:image validate="never" template-if="${value.favicon}" src="${value.favicon}"></xul:image>
       <xul:image validate="never" template-if="${!value.favicon}" src="chrome://mozapps/skin/places/defaultFavicon.png"></xul:image>
-      <div class="title" template-if="${value.title}">${value.title}</div>
-      <div class="title" template-if="${!value.title}">${key}</div>
+      <div class="title">${value.title}</div>
       <div class="actions">
         <span template-if="${value.length}">(${value.length}_tab)</span>
         <a href="#" onclick="${value.dedup}" template-if="${value.dedup}">[Dedup]</a>
