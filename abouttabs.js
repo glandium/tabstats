@@ -24,10 +24,6 @@ TabList.prototype = Object.create(Array.prototype, {
     this.close_or_dedup(false);
   }},
 
-  dedup: { value: function () {
-    this.close_or_dedup(true);
-  }},
-
   byLastAccessed: { value: function* () {
     var sorted = this.slice();
     sorted.sort(function(a, b) {
@@ -42,6 +38,16 @@ TabList.prototype = Object.create(Array.prototype, {
     for (var tab of sorted) {
       yield tab;
     }
+  }},
+});
+
+var DedupableTabList = function () {
+  TabList.apply(this, arguments);
+};
+
+DedupableTabList.prototype = Object.create(TabList.prototype, {
+  dedup: { value: function () {
+    this.close_or_dedup(true);
   }},
 });
 
@@ -98,7 +104,7 @@ TabCollection.prototype = {
   add: function(key, tab) {
     if (this.unique && key in this.unique) {
       var otherTab = this.unique[key];
-      var dupes = this.dupes[key] = new TabList(otherTab, tab);
+      var dupes = this.dupes[key] = new DedupableTabList(otherTab, tab);
       dupes.favicon = tab.image == otherTab.image ? tab.image : undefined;
       if (this.what == 'address') {
         dupes.title = tab.label == otherTab.label ? tab.label : undefined;
