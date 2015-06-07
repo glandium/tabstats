@@ -111,6 +111,14 @@ function _get_value(values, expr) {
   if (expr.charAt(0) == '!') {
     return !_get_value(values, expr.slice(1));
   }
+  var and = expr.split(/\s*&&\s*/);
+  if (and.length > 1) {
+    for (var expr of and) {
+      if (!_get_value(values, expr))
+        return false;
+    }
+    return true;
+  }
   var name = expr.split('.', 1)[0];
   if (name == expr) {
     var ret = values[expr];
@@ -134,7 +142,7 @@ function format(str, values) {
   if (str.indexOf('${') == -1) {
     return str;
   }
-  var template = str.split(/\$\{(\!*[\w\.]+)\}/g);
+  var template = str.split(/\$\{(\!*[\w\.]+(?:\s*&&\s*\!*[\w\.]+)*)\}/g);
   if (template.length == 1) {
     return str;
   }
