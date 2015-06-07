@@ -77,7 +77,7 @@ TabGroup.prototype = Object.create(Object.prototype, {
       return 0;
     });
     for (var key of sorted) {
-      yield { key: key, value: this[key] };
+      yield this[key];
     }
   }},
 });

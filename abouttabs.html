@@ -119,16 +119,16 @@ li.schemes span {
 <template id="item">
   <li>
     <div>
-      <xul:image validate="never" template-if="${value.favicon}" src="${value.favicon}"></xul:image>
-      <xul:image validate="never" template-if="${!value.favicon}" src="chrome://mozapps/skin/places/defaultFavicon.png"></xul:image>
-      <div class="title">${value.title}</div>
+      <xul:image validate="never" template-if="${favicon}" src="${favicon}"></xul:image>
+      <xul:image validate="never" template-if="${!favicon}" src="chrome://mozapps/skin/places/defaultFavicon.png"></xul:image>
+      <div class="title">${title}</div>
       <div class="actions">
-        <span template-if="${value.length}">(${value.length}_tab)</span>
-        <a href="#" onclick="${value.dedup}" template-if="${value.dedup}">[Dedup]</a>
-        <a href="#" onclick="${value.close}">[Close]</a>
+        <span template-if="${length}">(${length}_tab)</span>
+        <a href="#" onclick="${dedup}" template-if="${dedup}">[Dedup]</a>
+        <a href="#" onclick="${close}">[Close]</a>
       </div>
     </div>
-    <div class="url" template-if="${value.url}">${value.url}</div>
+    <div class="url" template-if="${url}">${url}</div>
   </li>
 </template>
 
