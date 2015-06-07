@@ -4,11 +4,11 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
-var TabList = function () {
+var TabArray = function () {
   this.push.apply(this, arguments);
 };
 
-TabList.prototype = Object.create(Array.prototype, {
+TabArray.prototype = Object.create(Array.prototype, {
   close_or_dedup: { value: function (keep_one) {
     for (var tab of (keep_one ? this.byLastAccessed() : this)) {
       if (keep_one) {
@@ -42,11 +42,11 @@ TabList.prototype = Object.create(Array.prototype, {
   }},
 });
 
-var DedupableTabList = function () {
-  TabList.apply(this, arguments);
+var DedupableTabArray = function () {
+  TabArray.apply(this, arguments);
 };
 
-DedupableTabList.prototype = Object.create(TabList.prototype, {
+DedupableTabArray.prototype = Object.create(TabArray.prototype, {
   dedup: { value: function () {
     this.close_or_dedup(true);
   }},
@@ -105,8 +105,8 @@ TabCollection.prototype = {
   add: function(key, tab) {
     if (this.unique && key in this.unique) {
       var otherTab = this.unique[key];
-      var tabListType = this.what == 'address' ? DedupableTabList : TabList;
-      var dupes = this.dupes[key] = new tabListType(otherTab, tab);
+      var tabArrayType = this.what == 'address' ? DedupableTabArray : TabArray;
+      var dupes = this.dupes[key] = new tabArrayType(otherTab, tab);
       dupes.favicon = tab.favicon == otherTab.favicon ? tab.favicon : undefined;
       if (this.what == 'address') {
         dupes.title = tab.title == otherTab.title ? tab.title : undefined;
