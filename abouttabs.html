@@ -125,7 +125,7 @@ li.schemes span {
       <div class="title" template-if="${!value.title}">${key}</div>
       <div class="actions">
         <span template-if="${value.length}">(${value.length}_tab)</span>
-        <a href="#" onclick="${value.dedup}" template-if="${value.url}">[Dedup]</a>
+        <a href="#" onclick="${value.dedup}" template-if="${value.dedup}">[Dedup]</a>
         <a href="#" onclick="${value.close}">[Close]</a>
       </div>
     </div>

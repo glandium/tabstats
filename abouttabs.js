@@ -105,7 +105,8 @@ TabCollection.prototype = {
   add: function(key, tab) {
     if (this.unique && key in this.unique) {
       var otherTab = this.unique[key];
-      var dupes = this.dupes[key] = new DedupableTabList(otherTab, tab);
+      var tabListType = this.what == 'address' ? DedupableTabList : TabList;
+      var dupes = this.dupes[key] = new tabListType(otherTab, tab);
       dupes.favicon = tab.favicon == otherTab.favicon ? tab.favicon : undefined;
       if (this.what == 'address') {
         dupes.title = tab.title == otherTab.title ? tab.title : undefined;
