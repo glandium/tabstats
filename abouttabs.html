@@ -54,7 +54,7 @@ li {
   margin: .3em 0;
 }
 
-ul.hosts, ul.addresses {
+ul.host, ul.address {
   list-style-type: none;
   -moz-padding-start: 20px;
 }
@@ -94,11 +94,43 @@ li.schemes span {
     <li>${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded</li>
     <li class="schemes" template="schemes" template-data="${schemes.byKey}" template-iterate=true></li>
     <li template-if="${blankTabs}">${blankTabs}_empty_tab</li>
+    <li template="list" template-data="${uris}"></li>
+    <li template="list" template-data="${hosts}"></li>
   </ul>
 </template>
 
 <template id="schemes">
   <span>${value} ${key}:</span>
+</template>
+
+<template id="list">${length}_unique_${what}
+  <ul template-if="${numDupes}">
+    <li>${numDupes}_${what} in more than 1 tab:
+      <span class="actions">
+        <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
+        <a href="#" onclick="${dupes.close}">[Close]</a>
+      </span>
+      <ul class="${what}" template="item" template-data="${dupes.byLength}" template-iterate=true></ul>
+    </li>
+    <li>${numUnique}_other_${what}</li>
+  </ul>
+</template>
+
+<template id="item">
+  <li>
+    <div>
+      <xul:image validate="never" template-if="${value.favicon}" src="${value.favicon}"></xul:image>
+      <xul:image validate="never" template-if="${!value.favicon}" src="chrome://mozapps/skin/places/defaultFavicon.png"></xul:image>
+      <div class="title" template-if="${value.title}">${value.title}</div>
+      <div class="title" template-if="${!value.title}">${key}</div>
+      <div class="actions">
+        <span template-if="${value.length}">(${value.length}_tab)</span>
+        <a href="#" onclick="${value.dedup}" template-if="${value.url}">[Dedup]</a>
+        <a href="#" onclick="${value.close}">[Close]</a>
+      </div>
+    </div>
+    <div class="url" template-if="${value.url}">${value.url}</div>
+  </li>
 </template>
 
 <template id="duplicates">

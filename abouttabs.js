@@ -4,17 +4,33 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
-const kDefaultFavicon = 'chrome://mozapps/skin/places/defaultFavicon.png';
+var TabList = function () {
+  this.push.apply(this, arguments);
+};
 
-function close(dict, key, keep_one) {
-  if (key === undefined) {
-    for (key in dict)
-      close(dict, key, keep_one);
-    return;
-  }
-  var tabs = dict[key];
-  if (keep_one) {
-    tabs.sort(function(a, b) {
+TabList.prototype = Object.create(Array.prototype, {
+  close_or_dedup: { value: function (keep_one) {
+    for (var tab of (keep_one ? this.byLastAccessed() : this)) {
+      if (keep_one) {
+        keep_one = false;
+        continue;
+      }
+      tab.ownerGlobal.gBrowser.removeTab(tab);
+    }
+    refresh();
+  }},
+
+  close: { value: function () {
+    this.close_or_dedup(false);
+  }},
+
+  dedup: { value: function () {
+    this.close_or_dedup(true);
+  }},
+
+  byLastAccessed: { value: function* () {
+    var sorted = this.slice();
+    sorted.sort(function(a, b) {
       time_a = a.lastAccessed;
       time_b = b.lastAccessed;
       if (time_a > time_b)
@@ -23,127 +39,83 @@ function close(dict, key, keep_one) {
         return 1;
       return 0;
     });
-  }
-  for (var tab of tabs) {
-    if (keep_one) {
-      keep_one = false;
-      continue;
+    for (var tab of sorted) {
+      yield tab;
     }
-    tab.ownerGlobal.gBrowser.removeTab(tab);
-  }
-}
+  }},
+});
 
-function create_event_handler(dict, key, keep_one) {
+var TabGroup = function () {
+};
+
+function _tabGroupMethod(name) {
   return function () {
-    close(dict, key, keep_one);
-    refresh();
-  }
-}
-
-function create_close_link(dict, key, keep_one, label) {
-  var a = document.createElement("a");
-  a.href = '#';
-  a.onclick = create_event_handler(dict, key, keep_one);
-  a.appendChild(document.createTextNode(label));
-  return a;
-}
-
-function replaceFirstChild(parent, newChild) {
-  if (parent.firstChild) {
-    parent.replaceChild(newChild, parent.firstChild);
-  } else {
-    parent.appendChild(newChild);
-  }
-}
-
-function createUniqueTabList(what, data, dupes, keys_are_urls) {
-  var li = document.createElement('li');
-  li.appendChild(document.createTextNode(format('${num}_${what} in more than 1 tab: ', {num: dupes.length, what: what})));
-  if (keys_are_urls) {
-    li.appendChild(create_close_link(data, undefined, true, '[Dedup]'));
-    li.appendChild(document.createTextNode(' '));
-  }
-  li.appendChild(create_close_link(data, undefined, false, '[Close]'));
-
-  var ul = document.createElement('ul');
-  ul.setAttribute('class', plural(2, what));
-  dupes.sort(function cmp(a, b) {
-    if (data[a].length < data[b].length)
-      return 1;
-    if (data[a].length > data[b].length)
-      return -1;
-    return 0;
-  }).forEach(function(k) {
-    var favicons = new Set((tab.image for (tab of data[k])));
-    var src;
-    if (favicons.size == 1) {
-      [src] = favicons.values();
+    for (var group in this) {
+      this[group][name]();
     }
-    if (!src)
-      src = kDefaultFavicon;
-
-    var title;
-    if (keys_are_urls) {
-      var titles = new Set((tab.label for (tab of data[k])));
-      if (titles.size == 1) {
-        [title] = titles.values();
-      }
-    }
-    if (!title)
-      title = k;
-
-    ul.appendChild(templates.duplicates.instantiate(document, {
-      'title': title,
-      'num_tabs': data[k].length,
-      'url': (keys_are_urls && title != k) ? k : undefined,
-      'favicon': src,
-      'dedup': keys_are_urls ? create_event_handler(data, k, true) : undefined,
-      'close': create_event_handler(data, k, false),
-    }));
-  });
-  li.appendChild(ul);
-  return li;
-}
-
-function createTabList(what, data, keys_are_urls) {
-  var numUnique = data.length;
-
-  var li = document.createElement('li');
-  li.appendChild(document.createTextNode(format('${numUnique}_unique_${what}', {numUnique: numUnique, what: what})));
-
-  var ul = document.createElement('ul');
-  li.appendChild(ul);
-
-  if (data.numDupes) {
-    ul.appendChild(createUniqueTabList(what, data.dupes, [k for (k in data.dupes)], keys_are_urls));
-    var sub_li = document.createElement('li');
-    sub_li.appendChild(document.createTextNode(format('${num}_other_${what}', {num: data.numUnique, what: what})));
-    ul.appendChild(sub_li);
   }
-
-  return li;
 }
 
-var TabList = function () {
+TabGroup.prototype = Object.create(Object.prototype, {
+  close: { value: _tabGroupMethod('close') },
+
+  byLength: { value: function* () {
+    var sorted = Object.keys(this);
+    var that = this;
+    sorted.sort(function(a, b) {
+      if (that[a].length < that[b].length)
+        return 1;
+      if (that[a].length > that[b].length)
+        return -1;
+      return 0;
+    });
+    for (var key of sorted) {
+      yield { key: key, value: this[key] };
+    }
+  }},
+});
+
+var DedupableTabGroup = function () {
+};
+
+DedupableTabGroup.prototype = Object.create(TabGroup.prototype, {
+  dedup: { value: _tabGroupMethod('dedup') },
+});
+
+var TabCollection = function (what) {
+  this.what = what;
   this.unique = {};
   this.numUnique = 0;
-  this.dupes = {};
+  this.dupes = (what == 'address' ? new DedupableTabGroup() : new TabGroup());
   this.numDupes = 0;
 };
 
-TabList.prototype = {
+TabCollection.prototype = {
   get length () {
     return this.numUnique + this.numDupes;
   },
 
   add: function(key, tab) {
     if (this.unique && key in this.unique) {
-      this.dupes[key] = [this.unique[key], tab];
+      var otherTab = this.unique[key];
+      var dupes = this.dupes[key] = new TabList(otherTab, tab);
+      dupes.favicon = tab.image == otherTab.image ? tab.image : undefined;
+      if (this.what == 'address') {
+        dupes.title = tab.label == otherTab.label ? tab.label : undefined;
+        dupes.url = key;
+      }
       this.numDupes++;
       delete this.unique[key];
       this.numUnique--;
     } else if (this.dupes && key in this.dupes) {
-      this.dupes[key].push(tab);
+      var dupes = this.dupes[key];
+      dupes.push(tab);
+      if (dupes.favicon != tab.image) {
+        delete dupes.favicon;
+      }
+      if (dupes.title != tab.label) {
+        delete dupes.title;
+      }
     } else {
       this.unique[key] = tab;
       this.numUnique++;
@@ -199,10 +171,10 @@ function refresh() {
     blankTabs: 0,
     loadedTabs: 0,
     schemes: new Sortable(),
+    uris: new TabCollection('address'),
+    hosts: new TabCollection('host'),
   }
 
-  var uris = new TabList();
-  var hosts = new TabList();
   tabs.forEach(function(tab) {
     var uri = tab.linkedBrowser.currentURI;
     if (uri.spec == "about:blank") {
@@ -211,10 +183,10 @@ function refresh() {
     }
     if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
       data.loadedTabs++;
-    uris.add(uri.spec, tab);
+    data.uris.add(uri.spec, tab);
     try {
       if (uri.host) {
-        hosts.add(uri.host, tab);
+        data.hosts.add(uri.host, tab);
       }
     } catch(e) {}
     if (uri.scheme in data.schemes)
@@ -224,11 +196,6 @@ function refresh() {
   });
 
   body.appendChild(templates.main.instantiate(document, data));
-
-  var ul = document.getElementById("stats");
-
-  ul.appendChild(createTabList('address', uris, true));
-  ul.appendChild(createTabList('host', hosts, false));
 }
 
 window.addEventListener("load", refresh, false);
