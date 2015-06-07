@@ -92,7 +92,7 @@ li.schemes span {
   </div>
   <ul id="stats">
     <li>${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded</li>
-    <li class="schemes" template="schemes" template-data="${schemes}" template-iterate=true></li>
+    <li class="schemes" template="schemes" template-data="${schemes.byKey}" template-iterate=true></li>
     <li template-if="${blankTabs}">${blankTabs}_empty_tab</li>
   </ul>
 </template>

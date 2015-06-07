@@ -151,6 +151,17 @@ TabList.prototype = {
   },
 };
 
+var Sortable = function () {
+};
+
+Sortable.prototype = Object.create(Object.prototype, {
+  byKey: { value: function* () {
+    for (var key of Object.keys(this).sort()) {
+      yield { key: key, value: this[key] };
+    }
+  }},
+});
+
 function refresh() {
   var windows = Services.wm.getEnumerator("navigator:browser");
   var windowsCount = 0;
@@ -187,12 +198,11 @@ function refresh() {
     tabGroupsCount: tabGroupsCount,
     blankTabs: 0,
     loadedTabs: 0,
-    schemes: {},
+    schemes: new Sortable(),
   }
 
   var uris = new TabList();
   var hosts = new TabList();
-  var schemes = {};
   tabs.forEach(function(tab) {
     var uri = tab.linkedBrowser.currentURI;
     if (uri.spec == "about:blank") {
@@ -207,14 +217,11 @@ function refresh() {
         hosts.add(uri.host, tab);
       }
     } catch(e) {}
-    if (uri.scheme in schemes)
-      schemes[uri.scheme]++;
+    if (uri.scheme in data.schemes)
+      data.schemes[uri.scheme]++;
     else
-      schemes[uri.scheme] = 1;
+      data.schemes[uri.scheme] = 1;
   });
-  for (key of Object.keys(schemes).sort()) {
-    data.schemes[key] = schemes[key];
-  }
 
   body.appendChild(templates.main.instantiate(document, data));
 

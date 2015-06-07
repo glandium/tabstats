@@ -81,11 +81,8 @@ Template.prototype = {
           data = values;
         }
         if (node.getAttribute('template-iterate')) {
-          for (var key in data) {
-            newNode.appendChild(template.instantiate(doc, {
-              key: key,
-              value: data[key],
-            }));
+          for (var item of data()) {
+            newNode.appendChild(template.instantiate(doc, item));
           }
         } else {
           newNode.appendChild(template.instantiate(doc, data));
@@ -116,7 +113,11 @@ function _get_value(values, expr) {
   }
   var name = expr.split('.', 1)[0];
   if (name == expr) {
-    return values[expr];
+    var ret = values[expr];
+    if (typeof ret == 'function') {
+      ret = ret.bind(values);
+    }
+    return ret;
   } else {
     return _get_value(values[name], expr.slice(name.length + 1));
   }
