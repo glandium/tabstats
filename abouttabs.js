@@ -15,7 +15,8 @@ TabList.prototype = Object.create(Array.prototype, {
         keep_one = false;
         continue;
       }
-      tab.ownerGlobal.gBrowser.removeTab(tab);
+      tab.obj.ownerGlobal.gBrowser.removeTab(tab.obj);
+      delete tab.obj;
     }
     refresh();
   }},
@@ -27,8 +28,8 @@ TabList.prototype = Object.create(Array.prototype, {
   byLastAccessed: { value: function* () {
     var sorted = this.slice();
     sorted.sort(function(a, b) {
-      time_a = a.lastAccessed;
-      time_b = b.lastAccessed;
+      time_a = a.obj.lastAccessed;
+      time_b = b.obj.lastAccessed;
       if (time_a > time_b)
         return -1;
       if (time_b > time_a)
@@ -105,10 +106,10 @@ TabCollection.prototype = {
     if (this.unique && key in this.unique) {
       var otherTab = this.unique[key];
       var dupes = this.dupes[key] = new DedupableTabList(otherTab, tab);
-      dupes.favicon = tab.image == otherTab.image ? tab.image : undefined;
+      dupes.favicon = tab.favicon == otherTab.favicon ? tab.favicon : undefined;
       if (this.what == 'address') {
-        dupes.title = tab.label == otherTab.label ? tab.label : undefined;
-        dupes.url = key;
+        dupes.title = tab.title == otherTab.title ? tab.title : undefined;
+        dupes.url = tab.url;
       }
       this.numDupes++;
       delete this.unique[key];
@@ -116,10 +117,10 @@ TabCollection.prototype = {
     } else if (this.dupes && key in this.dupes) {
       var dupes = this.dupes[key];
       dupes.push(tab);
-      if (dupes.favicon != tab.image) {
+      if (dupes.favicon != tab.favicon) {
         delete dupes.favicon;
       }
-      if (dupes.title != tab.label) {
+      if (dupes.title != tab.title) {
         delete dupes.title;
       }
     } else {
@@ -181,15 +182,21 @@ function refresh() {
     hosts: new TabCollection('host'),
   }
 
-  tabs.forEach(function(tab) {
-    var uri = tab.linkedBrowser.currentURI;
-    if (uri.spec == "about:blank") {
+  tabs.forEach(function(t) {
+    var uri = t.linkedBrowser.currentURI;
+    var tab = {
+      favicon: t.image,
+      title: t.label,
+      url: uri.spec,
+      obj: t,
+    }
+    if (tab.url == "about:blank") {
       data.blankTabs++
       return;
     }
-    if (!"__SS_restoreState" in tab.linkedBrowser || tab.linkedBrowser.__SS_restoreState != 1)
+    if (!"__SS_restoreState" in t.linkedBrowser || t.linkedBrowser.__SS_restoreState != 1)
       data.loadedTabs++;
-    data.uris.add(uri.spec, tab);
+    data.uris.add(tab.url, tab);
     try {
       if (uri.host) {
         data.hosts.add(uri.host, tab);
