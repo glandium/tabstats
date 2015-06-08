@@ -92,7 +92,7 @@ li.schemes span {
   </div>
   <ul id="stats">
     <li>${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded</li>
-    <li class="schemes" template="schemes" template-iterate="${schemes.byKey}"></li>
+    <li class="schemes" template="schemes" template-data="${schemes.byKey}"></li>
     <li template-if="${blankTabs}">${blankTabs}_empty_tab</li>
     <li template="list" template-data="${uris}"></li>
     <li template="list" template-data="${hosts}"></li>
@@ -110,7 +110,7 @@ li.schemes span {
         <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
         <a href="#" onclick="${dupes.close}">[Close]</a>
       </span>
-      <ul class="${what}" template="item" template-iterate="${dupes.byLength}"></ul>
+      <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
     </li>
     <li>${numUnique}_other_${what}</li>
   </ul>

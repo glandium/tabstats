@@ -17,7 +17,13 @@ var Template = function (template_node) {
 
 Template.prototype = {
   instantiate: function (parentNode, values) {
-    parentNode.appendChild(this._instantiate(values, this._template));
+    if (typeof values == 'function') {
+      for (var item of values()) {
+        parentNode.appendChild(this._instantiate(item, this._template));
+      }
+    } else {
+      parentNode.appendChild(this._instantiate(values, this._template));
+    }
   },
 
   _instantiate: function (values, node) {
@@ -74,23 +80,13 @@ Template.prototype = {
         template = templates[template];
       }
       if (template) {
-        var iterate = node.getAttribute('template-iterate');
-        var data = iterate;
-        if (!data) {
-          data = node.getAttribute('template-data');
-        }
+        var data = node.getAttribute('template-data');
         if (data) {
           data = format(data, values);
         } else {
           data = values;
         }
-        if (iterate) {
-          for (var item of data()) {
-            template.instantiate(newNode, item);
-          }
-        } else {
-          template.instantiate(newNode, data);
-        }
+        template.instantiate(newNode, data);
       }
     }
     return newNode;
