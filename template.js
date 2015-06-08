@@ -75,7 +75,11 @@ Template.prototype = {
       }
     }
     if (node.nodeType == Node.ELEMENT_NODE) {
-      var template = node.getAttribute('template');
+      var template = node.getAttribute('template-delay');
+      var delay = !!template;
+      if (!template) {
+        template = node.getAttribute('template');
+      }
       if (template) {
         template = templates[template];
       }
@@ -86,7 +90,14 @@ Template.prototype = {
         } else {
           data = values;
         }
-        template.instantiate(newNode, data);
+        if (delay) {
+          newNode.instantiate = function () {
+            template.instantiate(this, data);
+            delete this.instantiate;
+          }
+        } else {
+          template.instantiate(newNode, data);
+        }
       }
     }
     return newNode;
