@@ -124,10 +124,11 @@ li.schemes span {
     <span>${windowsCount}_window</span>
     <span>${tabGroupsCount}_tab_group</span>
   </div>
-  <ul id="stats" template="main_group" template-data="${groups}">
+  <ul id="stats">
     <li>${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded</li>
     <li class="schemes" template="schemes" template-data="${schemes.byKey}"></li>
     <li template-if="${blankTabs}">${blankTabs}_empty_tab</li>
+    <apply template="main_group" template-data="${groups}"></apply>
   </ul>
 </template>
 

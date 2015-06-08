@@ -33,7 +33,9 @@ Template.prototype = {
       if (condition && !format(condition, values)) {
         return undefined;
       }
-      if (node.localName.toLowerCase().startsWith('xul:')) {
+      if (node.localName == 'apply') {
+        newNode = document.createDocumentFragment();
+      } else if (node.localName.toLowerCase().startsWith('xul:')) {
         newNode = document.createElementNS(kNSXUL, node.localName.slice(4));
       } else {
         newNode = document.createElementNS(node.namespaceURI, node.localName);
