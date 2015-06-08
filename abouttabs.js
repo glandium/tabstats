@@ -20,7 +20,11 @@ Tab.prototype = {
     if (refresh !== false) {
       window.refresh();
     }
-  }
+  },
+
+  switchTo: function () {
+    this.obj.ownerGlobal.gBrowser.selectedTab = this.obj;
+  },
 };
 
 var _TabListMethods = {
