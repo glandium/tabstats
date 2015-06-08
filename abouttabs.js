@@ -4,6 +4,25 @@ const Cu = Components.utils;
 
 Cu.import("resource://gre/modules/Services.jsm");
 
+var Tab = function (tab) {
+  this.favicon = tab.image;
+  this.title = tab.label;
+  this.url = tab.linkedBrowser.currentURI.spec;
+  this.obj = tab;
+  this.loaded = (!"__SS_restoreState" in tab.linkedBrowser
+                 || tab.linkedBrowser.__SS_restoreState != 1);
+};
+
+Tab.prototype = {
+  close: function (refresh=true) {
+    this.obj.ownerGlobal.gBrowser.removeTab(this.obj);
+    delete this.obj;
+    if (refresh !== false) {
+      window.refresh();
+    }
+  }
+};
+
 var TabArray = function () {
   this.push.apply(this, arguments);
 };
@@ -15,8 +34,7 @@ TabArray.prototype = Object.create(Array.prototype, {
         keep_one = false;
         continue;
       }
-      tab.obj.ownerGlobal.gBrowser.removeTab(tab.obj);
-      delete tab.obj;
+      tab.close(false);
     }
     refresh();
   }},
@@ -183,26 +201,20 @@ function refresh() {
 
   tabs.forEach(function(t) {
     var uri = t.linkedBrowser.currentURI;
-    var tab = {
-      favicon: t.image,
-      title: t.label,
-      url: uri.spec,
-      obj: t,
-    }
+    var tab = new Tab(t);
     if (tab.url == "about:blank") {
       data.blankTabs++
       return;
     }
-    if (!"__SS_restoreState" in t.linkedBrowser || t.linkedBrowser.__SS_restoreState != 1)
+    if (tab.loaded) {
       data.loadedTabs++;
+    }
     data.uris.add(tab.url, tab);
     try {
       if (uri.host) {
-        var tab = {
-          favicon: t.image,
-          title: uri.host,
-          obj: t,
-        }
+        var tab = new Tab(t);
+        tab.title = uri.host;
+        delete tab.url;
         data.hosts.add(uri.host, tab);
       }
     } catch(e) {}
