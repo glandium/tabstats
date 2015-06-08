@@ -210,6 +210,10 @@ function refresh() {
     schemes: new Sortable(),
     uris: new TabCollection('address'),
     hosts: new TabCollection('host'),
+    groups: function* () {
+      yield this.uris;
+      yield this.hosts;
+    }
   }
 
   tabs.forEach(function(t) {

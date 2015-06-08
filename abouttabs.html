@@ -90,12 +90,10 @@ li.schemes span {
     <span>${windowsCount}_window</span>
     <span>${tabGroupsCount}_tab_group</span>
   </div>
-  <ul id="stats">
+  <ul id="stats" template="group" template-data="${groups}">
     <li>${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded</li>
     <li class="schemes" template="schemes" template-data="${schemes.byKey}"></li>
     <li template-if="${blankTabs}">${blankTabs}_empty_tab</li>
-    <li template="list" template-data="${uris}"></li>
-    <li template="list" template-data="${hosts}"></li>
   </ul>
 </template>
 
@@ -103,20 +101,22 @@ li.schemes span {
   <span>${value} ${key}:</span>
 </template>
 
-<template id="list">${length}_unique_${what}
-  <ul template-if="${numDupes}">
-    <li>${numDupes}_${what} in more than 1 tab:
-      <span class="actions">
-        <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
-        <a href="#" onclick="${dupes.close}">[Close]</a>
-      </span>
-      <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
-    </li>
-    <li>${numUnique}_other_${what}
-      <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
-    </li>
-  </ul>
-  <ul class="${what}" template-if="${!numDupes}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
+<template id="group">
+  <li>${length}_unique_${what}
+    <ul template-if="${numDupes}">
+      <li>${numDupes}_${what} in more than 1 tab:
+        <span class="actions">
+          <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
+          <a href="#" onclick="${dupes.close}">[Close]</a>
+        </span>
+        <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
+      </li>
+      <li>${numUnique}_other_${what}
+        <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
+      </li>
+    </ul>
+    <ul class="${what}" template-if="${!numDupes}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
+  </li>
 </template>
 
 <template id="item">
