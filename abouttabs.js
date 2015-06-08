@@ -224,7 +224,7 @@ function refresh() {
       data.schemes[uri.scheme] = 1;
   });
 
-  body.appendChild(templates.main.instantiate(document, data));
+  templates.main.instantiate(body, data);
 }
 
 window.addEventListener("load", refresh, false);

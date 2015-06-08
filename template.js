@@ -16,11 +16,11 @@ var Template = function (template_node) {
 }
 
 Template.prototype = {
-  instantiate: function (doc, values) {
-    return this._instantiate(doc, values, this._template);
+  instantiate: function (parentNode, values) {
+    parentNode.appendChild(this._instantiate(values, this._template));
   },
 
-  _instantiate: function (doc, values, node) {
+  _instantiate: function (values, node) {
     var newNode;
     if (node.nodeType == Node.ELEMENT_NODE) {
       var condition = node.getAttribute('template-if');
@@ -28,9 +28,9 @@ Template.prototype = {
         return undefined;
       }
       if (node.localName.toLowerCase().startsWith('xul:')) {
-        newNode = doc.createElementNS(kNSXUL, node.localName.slice(4));
+        newNode = document.createElementNS(kNSXUL, node.localName.slice(4));
       } else {
-        newNode = doc.createElementNS(node.namespaceURI, node.localName);
+        newNode = document.createElementNS(node.namespaceURI, node.localName);
       }
       for (var n of node.attributes) {
         if (n.name.startsWith('on')) {
@@ -50,11 +50,11 @@ Template.prototype = {
         }
       }
     } else if (node.nodeType == Node.DOCUMENT_FRAGMENT_NODE) {
-      newNode = doc.createDocumentFragment();
+      newNode = document.createDocumentFragment();
     }
     for (var n of node.childNodes) {
       if (n.nodeType == Node.ELEMENT_NODE) {
-        var subNode = this._instantiate(doc, values, n);
+        var subNode = this._instantiate(values, n);
         if (subNode) {
           newNode.appendChild(subNode);
         }
@@ -64,7 +64,7 @@ Template.prototype = {
           text = JSON.stringify(text);
         }
         if (text && text.match(/\S/)) {
-          newNode.appendChild(doc.createTextNode(text));
+          newNode.appendChild(document.createTextNode(text));
         }
       }
     }
@@ -86,10 +86,10 @@ Template.prototype = {
         }
         if (iterate) {
           for (var item of data()) {
-            newNode.appendChild(template.instantiate(doc, item));
+            template.instantiate(newNode, item);
           }
         } else {
-          newNode.appendChild(template.instantiate(doc, data));
+          template.instantiate(newNode, data);
         }
       }
     }
