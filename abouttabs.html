@@ -181,20 +181,5 @@ li.schemes span {
   </li>
 </template>
 
-<template id="duplicates">
-  <li>
-    <div>
-      <xul:image validate="never" src="${favicon}"></xul:image>
-      <div class="title">${title}</div>
-      <div class="actions">
-        (${num_tabs}_tab)
-        <a href="#" onclick="${dedup}" template-if="${dedup}">[Dedup]</a>
-        <a href="#" onclick="${close}">[Close]</a>
-      </div>
-    </div>
-    <div class="url">${url}</div>
-  </li>
-</template>
-
 </body>
 </html>
