@@ -23,11 +23,7 @@ Tab.prototype = {
   }
 };
 
-var TabArray = function () {
-  this.push.apply(this, arguments);
-};
-
-TabArray.prototype = Object.create(Array.prototype, {
+var _TabListMethods = {
   close_or_dedup: { value: function (keep_one) {
     for (var tab of (keep_one ? this.byLastAccessed() : this)) {
       if (keep_one) {
@@ -58,7 +54,24 @@ TabArray.prototype = Object.create(Array.prototype, {
       yield tab;
     }
   }},
+};
+
+var TabList = function () {
+};
+
+TabList.prototype = Object.create(Object.prototype, _TabListMethods);
+
+Object.defineProperties(TabList.prototype, {
+  slice: { value: function() {
+    return [this[item] for (item in this)];
+  }},
 });
+
+var TabArray = function () {
+  this.push.apply(this, arguments);
+};
+
+TabArray.prototype = Object.create(Array.prototype, _TabListMethods);
 
 var DedupableTabArray = function () {
   TabArray.apply(this, arguments);
@@ -109,7 +122,7 @@ DedupableTabGroup.prototype = Object.create(TabGroup.prototype, {
 
 var TabCollection = function (what) {
   this.what = what;
-  this.unique = {};
+  this.unique = new TabList();
   this.numUnique = 0;
   this.dupes = (what == 'address' ? new DedupableTabGroup() : new TabGroup());
   this.numDupes = 0;
