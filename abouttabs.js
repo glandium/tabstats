@@ -244,4 +244,24 @@ function refresh() {
   templates.main.instantiate(body, data);
 }
 
+function toggle(node) {
+  var classes = node.getAttribute('class');
+  classes = classes ? classes.split(' ') : [];
+  var newClasses = classes.filter(function (c) { return c != 'closed' });
+  if (newClasses.length == classes.length) {
+    newClasses.push('closed');
+  }
+  var wasClosed = newClasses.length < classes.length;
+  if (wasClosed) {
+    for (var child of node.children) {
+      if (child.localName == 'ul') {
+        if (child.instantiate) {
+          child.instantiate();
+        }
+      }
+    }
+  }
+  node.setAttribute('class', newClasses.join(' '));
+}
+
 window.addEventListener("load", refresh, false);

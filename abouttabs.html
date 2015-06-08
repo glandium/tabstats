@@ -78,6 +78,26 @@ ul.host, ul.address {
 li.schemes span {
   margin-right: 1em;
 }
+
+.closed > ul {
+  display: none;
+}
+
+.group.closed {
+  list-style: "▷ "
+}
+
+.group.closed:hover {
+  list-style: "▶ "
+}
+
+.group {
+  list-style: "▽ "
+}
+
+.group:hover {
+  list-style: "▼ "
+}
 </style>
 </head>
 <body>
@@ -91,7 +111,7 @@ li.schemes span {
     <span>${windowsCount}_window</span>
     <span>${tabGroupsCount}_tab_group</span>
   </div>
-  <ul id="stats" template="group" template-data="${groups}">
+  <ul id="stats" template="main_group" template-data="${groups}">
     <li>${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded</li>
     <li class="schemes" template="schemes" template-data="${schemes.byKey}"></li>
     <li template-if="${blankTabs}">${blankTabs}_empty_tab</li>
@@ -102,22 +122,32 @@ li.schemes span {
   <span>${value} ${key}:</span>
 </template>
 
-<template id="group">
-  <li>${length}_unique_${what}
-    <ul template-if="${numDupes}">
-      <li>${numDupes}_${what} in more than 1 tab:
-        <span class="actions">
-          <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
-          <a href="#" onclick="${dupes.close}">[Close]</a>
-        </span>
-        <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
-      </li>
-      <li>${numUnique}_other_${what}
-        <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
-      </li>
-    </ul>
-    <ul class="${what}" template-if="${!numDupes}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
-  </li>
+<template id="main_group">
+  <li template-if="${numDupes}" template="main_group_with_dupes" class="group"></li>
+  <li template-if="${!numDupes}" template="main_group_without_dupes" class="group closed"></li>
+</template>
+
+<template id="main_group_with_dupes">
+  <span onclick="toggle(this.parentNode)">${length}_unique_${what}</span>
+  <ul>
+    <li class="group">
+      <span onclick="toggle(this.parentNode)">${numDupes}_${what} in more than 1 tab</span>
+      <span class="actions">
+        <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
+        <a href="#" onclick="${dupes.close}">[Close]</a>
+      </span>
+      <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
+    </li>
+    <li class="group closed">
+      <span onclick="toggle(this.parentNode)">${numUnique}_other_${what}</span>
+      <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
+    </li>
+  </ul>
+</template>
+
+<template id="main_group_without_dupes">
+  <span onclick="toggle(this.parentNode)">${numUnique}_unique_${what}</span>
+  <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
 </template>
 
 <template id="item">
