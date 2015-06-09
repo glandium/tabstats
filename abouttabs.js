@@ -8,6 +8,7 @@ var Tab = function (tab) {
   this.favicon = tab.image;
   this.title = tab.label;
   this.url = tab.linkedBrowser.currentURI.spec;
+  this.lastAccessed = tab.lastAccessed;
   this.obj = tab;
   this.loaded = (!"__SS_restoreState" in tab.linkedBrowser
                  || tab.linkedBrowser.__SS_restoreState != 1);
@@ -24,6 +25,15 @@ Tab.prototype = {
 
   switchTo: function () {
     this.obj.ownerGlobal.gBrowser.selectedTab = this.obj;
+  },
+
+  get lastAccessedAgo () {
+    return window.refreshTime.timeAgo(this.lastAccessed);
+  },
+
+  get lastAccessedDate () {
+    var date = new Date(this.lastAccessed);
+    return date.toString();
   },
 };
 
@@ -46,8 +56,8 @@ var _TabListMethods = {
   byLastAccessed: { value: function* () {
     var sorted = this.slice();
     sorted.sort(function(a, b) {
-      time_a = a.obj.lastAccessed;
-      time_b = b.obj.lastAccessed;
+      time_a = a.lastAccessed;
+      time_b = b.lastAccessed;
       if (time_a > time_b)
         return -1;
       if (time_b > time_a)
@@ -187,6 +197,7 @@ Sortable.prototype = Object.create(Object.prototype, {
 });
 
 function refresh() {
+  window.refreshTime = new MyDate(Date.now());
   var windows = Services.wm.getEnumerator("navigator:browser");
   var windowsCount = 0;
   var tabGroupsCount = 0;
