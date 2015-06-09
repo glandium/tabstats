@@ -173,8 +173,7 @@ li.schemes span {
       <div class="title" template-if="${title}">${title}</div>
       <div class="title" template-if="${!title}">${url}</div>
       <div class="actions">
-        <a href="#" template-if="${length && !dedup}" onclick="toggle(this.parentNode.parentNode.parentNode)">(${length}_tab)</a>
-        <span template-if="${length && dedup}">(${length}_tab)</span>
+        <a href="#" template-if="${length}" onclick="toggle(this.parentNode.parentNode.parentNode)">(${length}_tab)</a>
         <a href="#" onclick="${dedup}" template-if="${dedup}">[Dedup]</a>
         <a href="#" onclick="${switchTo}" template-if="${!length}">[Switch to]</a>
         <a href="#" onclick="${close}">[Close]</a>
@@ -182,6 +181,7 @@ li.schemes span {
     </div>
     <div class="extra" template-if="${url && title}">${url}</div>
     <div class="extra" template-if="${!length && url}" template="last_accessed"></div>
+    <ul template-if="${dedup}" template-delay="select_dedup" template-data="${byLastAccessed}"></ul>
     <ul class="subgroup" template-if="${!dedup}" template-delay="subgroup_with_dupes" template-data="${collectionByAddress}"></ul>
   </li>
 </template>
@@ -189,6 +189,16 @@ li.schemes span {
 <template id="subgroup_with_dupes">
   <apply template-if="${numDupes}" template="main_group_with_dupes"></apply>
   <apply template-if="${!numDupes}" template="item" template-data="${unique.byLastAccessed}"></apply>
+</template>
+
+<template id="select_dedup">
+  <li>
+    <span template="last_accessed"></span>
+    <span class="actions">
+      <a href="#" onclick="${switchTo}">[Switch to]</a>
+      <a href="#" onclick="${close}">[Close]</a>
+    </span>
+  </li>
 </template>
 
 <template id="last_accessed">Last accessed
