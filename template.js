@@ -87,17 +87,14 @@ Template.prototype = {
       }
       if (template) {
         var data = node.getAttribute('template-data');
-        if (data) {
-          data = format(data, values);
-        } else {
-          data = values;
-        }
         if (delay) {
           newNode.instantiate = function () {
-            template.instantiate(this, data);
+            var d = data ? format(data, values) : values;
+            template.instantiate(this, d);
             delete this.instantiate;
           }
         } else {
+          data = data ? format(data, values) : values;
           template.instantiate(newNode, data);
         }
       }
