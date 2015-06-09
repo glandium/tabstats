@@ -60,7 +60,8 @@ ul.host, ul.address {
   -moz-padding-start: 20px;
 }
 
-ul.host > li:nth-of-type(2n), ul.address > li:nth-of-type(2n) {
+ul.host > li:nth-of-type(2n), ul.address > li:nth-of-type(2n),
+ul.subgroup > li:nth-of-type(2n+1) {
   background-image: linear-gradient(to right, rgba(0,0,0,0), #e0e0e0);
 }
 
@@ -87,7 +88,7 @@ li.schemes span {
   display: none;
 }
 
-.group {
+.group, .subgroup {
   /* Only Firefox >= 39 supports list-style: <string>, so cheat with ::before */
   list-style: none;
 }
@@ -137,49 +138,54 @@ li.schemes span {
 </template>
 
 <template id="main_group">
-  <li template-if="${numDupes}" template="main_group_with_dupes" class="group"></li>
-  <li template-if="${!numDupes}" template="main_group_without_dupes" class="group closed"></li>
+  <li template-if="${numDupes}" class="group">
+    <span onclick="toggle(this.parentNode)">${length}_unique_${what}</span>
+    <ul template="main_group_with_dupes"></ul>
+  </li>
+  <li template-if="${!numDupes}" class="group closed">
+    <span onclick="toggle(this.parentNode)">${numUnique}_unique_${what}</span>
+    <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
+  </li>
 </template>
 
 <template id="main_group_with_dupes">
-  <span onclick="toggle(this.parentNode)">${length}_unique_${what}</span>
-  <ul>
-    <li class="group">
-      <span onclick="toggle(this.parentNode)">${numDupes}_${what} in more than 1 tab</span>
-      <span class="actions">
-        <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
-        <a href="#" onclick="${dupes.close}">[Close]</a>
-      </span>
-      <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
-    </li>
-    <li class="group closed">
-      <span onclick="toggle(this.parentNode)">${numUnique}_other_${what}</span>
-      <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
-    </li>
-  </ul>
-</template>
-
-<template id="main_group_without_dupes">
-  <span onclick="toggle(this.parentNode)">${numUnique}_unique_${what}</span>
-  <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
+  <li class="group">
+    <span onclick="toggle(this.parentNode)">${numDupes}_${what} in more than 1 tab</span>
+    <span class="actions">
+      <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
+      <a href="#" onclick="${dupes.close}">[Close]</a>
+    </span>
+    <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
+  </li>
+  <li class="group closed">
+    <span onclick="toggle(this.parentNode)">${numUnique}_other_${what}</span>
+    <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
+  </li>
 </template>
 
 <template id="item">
-  <li>
+  <li class="closed">
     <div>
       <xul:image validate="never" template-if="${favicon}" src="${favicon}"></xul:image>
       <xul:image validate="never" template-if="${!favicon}" src="chrome://mozapps/skin/places/defaultFavicon.png"></xul:image>
       <div class="title" template-if="${title}">${title}</div>
       <div class="title" template-if="${!title}">${url}</div>
       <div class="actions">
-        <span template-if="${length}">(${length}_tab)</span>
+        <a href="#" template-if="${length && !dedup}" onclick="toggle(this.parentNode.parentNode.parentNode)">(${length}_tab)</a>
+        <span template-if="${length && dedup}">(${length}_tab)</span>
         <a href="#" onclick="${dedup}" template-if="${dedup}">[Dedup]</a>
         <a href="#" onclick="${switchTo}" template-if="${!length}">[Switch to]</a>
         <a href="#" onclick="${close}">[Close]</a>
       </div>
     </div>
     <div class="url" template-if="${url && title}">${url}</div>
+    <ul class="subgroup" template-if="${!dedup}" template-delay="subgroup_with_dupes" template-data="${collectionByAddress}"></ul>
   </li>
+</template>
+
+<template id="subgroup_with_dupes">
+  <apply template-if="${numDupes}" template="main_group_with_dupes"></apply>
+  <apply template-if="${!numDupes}" template="item" template-data="${unique.byLastAccessed}"></apply>
 </template>
 
 </body>

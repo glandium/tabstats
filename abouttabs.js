@@ -77,6 +77,17 @@ var TabArray = function () {
 
 TabArray.prototype = Object.create(Array.prototype, _TabListMethods);
 
+Object.defineProperties(TabArray.prototype, {
+  collectionByAddress: { get: function () {
+    var result = new TabCollection('address');
+    for (var tab of this) {
+      tab = new Tab(tab.obj);
+      result.add(tab.url, tab);
+    }
+    return result;
+  }},
+});
+
 var DedupableTabArray = function () {
   TabArray.apply(this, arguments);
 };
