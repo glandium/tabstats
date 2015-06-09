@@ -118,9 +118,6 @@ function plural(n, noun) {
 }
 
 function _get_value(values, expr) {
-  if (expr.charAt(0) == '!') {
-    return !_get_value(values, expr.slice(1));
-  }
   var and = expr.split(/\s*&&\s*/);
   if (and.length > 1) {
     for (var expr of and) {
@@ -128,6 +125,9 @@ function _get_value(values, expr) {
         return false;
     }
     return true;
+  }
+  if (expr.charAt(0) == '!') {
+    return !_get_value(values, expr.slice(1));
   }
   var name = expr.split('.', 1)[0];
   if (name == expr) {
