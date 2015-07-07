@@ -16,7 +16,7 @@
 <template id="main">
   <div id="top">
     <h1>${tabCount}_tab</h1>
-    <button onclick="refresh()">Refresh</button>
+    <button event-click="refresh()">Refresh</button>
   </div>
   <div id="bar">
     <span>${windowsCount}_window</span>
@@ -36,26 +36,26 @@
 
 <template id="main_group">
   <li template-if="${numDupes}" class="group">
-    <span onclick="toggle(this.parentNode)">${length}_unique_${what}</span>
+    <span event-click="toggle(this.parentNode)">${length}_unique_${what}</span>
     <ul template="main_group_with_dupes"></ul>
   </li>
   <li template-if="${!numDupes}" class="group closed">
-    <span onclick="toggle(this.parentNode)">${numUnique}_unique_${what}</span>
+    <span event-click="toggle(this.parentNode)">${numUnique}_unique_${what}</span>
     <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
   </li>
 </template>
 
 <template id="main_group_with_dupes">
   <li class="group">
-    <span onclick="toggle(this.parentNode)">${numDupes}_${what} in more than 1 tab</span>
+    <span event-click="toggle(this.parentNode)">${numDupes}_${what} in more than 1 tab</span>
     <span class="actions">
-      <a href="#" onclick="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
-      <a href="#" onclick="${dupes.close}">[Close]</a>
+      <a href="#" event-click="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
+      <a href="#" event-click="${dupes.close}">[Close]</a>
     </span>
     <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
   </li>
   <li class="group closed">
-    <span onclick="toggle(this.parentNode)">${numUnique}_other_${what}</span>
+    <span event-click="toggle(this.parentNode)">${numUnique}_other_${what}</span>
     <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
   </li>
 </template>
@@ -68,10 +68,10 @@
       <div class="title" template-if="${title}">${title}</div>
       <div class="title" template-if="${!title}">${url}</div>
       <div class="actions">
-        <a href="#" template-if="${length}" onclick="toggle(this.parentNode.parentNode.parentNode)">(${length}_tab)</a>
-        <a href="#" onclick="${dedup}" template-if="${dedup}">[Dedup]</a>
-        <a href="#" onclick="${switchTo}" template-if="${!length}">[Switch to]</a>
-        <a href="#" onclick="${close}">[Close]</a>
+        <a href="#" template-if="${length}" event-click="toggle(this.parentNode.parentNode.parentNode)">(${length}_tab)</a>
+        <a href="#" event-click="${dedup}" template-if="${dedup}">[Dedup]</a>
+        <a href="#" event-click="${switchTo}" template-if="${!length}">[Switch to]</a>
+        <a href="#" event-click="${close}">[Close]</a>
       </div>
     </div>
     <div class="extra" template-if="${url && title}">${url}</div>
@@ -90,8 +90,8 @@
   <li>
     <span template="last_accessed"></span>
     <span class="actions">
-      <a href="#" onclick="${switchTo}">[Switch to]</a>
-      <a href="#" onclick="${close}">[Close]</a>
+      <a href="#" event-click="${switchTo}">[Switch to]</a>
+      <a href="#" event-click="${close}">[Close]</a>
     </span>
   </li>
 </template>

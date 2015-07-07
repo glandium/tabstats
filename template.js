@@ -45,12 +45,12 @@ Template.prototype = {
         newNode = document.createElementNS(node.namespaceURI, node.localName);
       }
       for (var n of node.attributes) {
-        if (n.name.startsWith('on')) {
-          var handler = format(n.value, values);
-          if (typeof handler == 'string') {
-            newNode.setAttribute(n.name, handler);
+        if (n.name.startsWith('event-')) {
+          var handler = get_value(n.value, values);
+          if (handler === n.value) {
+            newNode.setAttribute('on' + n.name.slice(6), n.value);
           } else {
-            newNode.addEventListener(n.name.slice(2),
+            newNode.addEventListener(n.name.slice(6),
               format(n.value, values), false);
           }
         } else if (!n.name.startsWith('template')) {
@@ -143,6 +143,13 @@ function _get_value(values, expr) {
   } else {
     return _get_value(values[name], expr.slice(name.length + 1));
   }
+}
+
+function get_value(str, values) {
+  if (str.startsWith('${') && str.endsWith('}')) {
+    return _get_value(values, str.slice(2, -1));
+  }
+  return str;
 }
 
 // format('${n}_dog ${k}_horse', {n: 2, k: 1}) => "2 dogs 1 horse"
