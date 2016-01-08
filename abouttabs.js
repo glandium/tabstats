@@ -81,7 +81,10 @@ TabList.prototype = Object.create(Object.prototype, _TabListMethods);
 
 Object.defineProperties(TabList.prototype, {
   slice: { value: function() {
-    return [this[item] for (item in this)];
+    var items = [];
+    for (key in this)
+      items.push(this[key]);
+    return items;
   }},
 });
 
