@@ -4,6 +4,7 @@
     <em:version>0.1.2</em:version>
     <em:type>2</em:type>
     <em:bootstrap>true</em:bootstrap>
+    <em:multiprocessCompatible>true</em:multiprocessCompatible>
 
     <!-- Target Application this extension can install into, 
          with minimum and maximum supported versions. For a list 
