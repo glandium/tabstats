@@ -6,10 +6,10 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8">
 <title>About Tabs</title>
-<script src="resource://tabstats/template.js"></script>
-<script src="resource://tabstats/util.js"></script>
-<script src="resource://tabstats/abouttabs.js"></script>
-<link rel="stylesheet" type="text/css" href="resource://tabstats/abouttabs.css"></link>
+<script src="template.js"></script>
+<script src="util.js"></script>
+<script src="abouttabs.js"></script>
+<link rel="stylesheet" type="text/css" href="abouttabs.css"></link>
 </head>
 <body>
 
@@ -20,7 +20,6 @@
   </div>
   <div id="bar">
     <span>${windowsCount}_window</span>
-    <span>${tabGroupsCount}_tab_group</span>
   </div>
   <ul id="stats">
     <li>${loadedTabs}_tab ${loadedTabs}?(has|have) been loaded</li>
@@ -31,7 +30,7 @@
 </template>
 
 <template id="schemes">
-  <span>${value} ${key}:</span>
+  <span>${value} ${key}</span>
 </template>
 
 <template id="main_group">
@@ -63,8 +62,10 @@
 <template id="item">
   <li class="closed">
     <div>
+<!--
       <xul:image validate="never" template-if="${favicon}" src="${favicon}"></xul:image>
       <xul:image validate="never" template-if="${!favicon}" src="chrome://mozapps/skin/places/defaultFavicon.png"></xul:image>
+-->
       <div class="title" template-if="${title}">${title}</div>
       <div class="title" template-if="${!title}">${url}</div>
       <div class="actions">

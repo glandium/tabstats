@@ -1,0 +1,25 @@
+{
+  "manifest_version": 2,
+  "name": "Tab Stats",
+  "version": "0.1.4",
+  "description": "Provide some data about open tabs.",
+  "applications": {
+    "gecko": {
+      "id": "tabstats@glandium.org"
+    }
+  },
+  "browser_action": {
+    "browser_style": false,
+    "default_area": "tabstrip",
+    "default_title": "Tab Stats"
+  },
+  "permissions": [
+    "tabs"
+  ],
+  "content_security_policy": "default-src 'self'; script-src 'self' 'unsafe-eval';",
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  }
+}

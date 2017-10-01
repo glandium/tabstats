@@ -48,7 +48,8 @@ Template.prototype = {
         if (n.name.startsWith('event-')) {
           var handler = get_value(n.value, values);
           if (handler === n.value) {
-            newNode.setAttribute('on' + n.name.slice(6), n.value);
+            newNode.addEventListener(n.name.slice(6),
+              eval(`(function handler(){${n.value}})`), false);
           } else {
             newNode.addEventListener(n.name.slice(6),
               format(n.value, values), false);

@@ -61,6 +61,10 @@ ul.subgroup > li:nth-of-type(2n+1) {
   background-image: linear-gradient(to right, rgba(0,0,0,0), #e0e0e0);
 }
 
+a, a:visited {
+  color: blue;
+}
+
 .title {
   overflow: hidden;
   text-overflow: ellipsis;

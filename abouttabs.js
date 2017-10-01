@@ -2,33 +2,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
-const Cu = Components.utils;
-
-Cu.import("resource://gre/modules/Services.jsm");
-
 var Tab = function (tab) {
-  this.favicon = tab.image;
-  this.title = tab.label;
-  this.url = tab.linkedBrowser.currentURI.spec;
+  this.favicon = tab.favIconUrl;
+  this.title = tab.title;
+  this.url = tab.url;
   this.lastAccessed = tab.lastAccessed;
   this.obj = tab;
-  this.loaded = (!"__SS_restoreState" in tab.linkedBrowser
-                 || tab.linkedBrowser.__SS_restoreState != 1);
+  this.loaded = !tab.discarded;
 };
 
 Tab.prototype = {
   close: function (refresh=true) {
-    this.obj.ownerGlobal.gBrowser.removeTab(this.obj);
-    delete this.obj;
-    if (refresh !== false) {
-      window.refresh();
-    }
+    var that = this;
+    browser.tabs.remove(this.obj.id).then(function() {
+      delete that.obj;
+      if (refresh !== false) {
+        window.refresh();
+      }
+    }, onError);
   },
 
   switchTo: function () {
-    this.obj.ownerGlobal.gBrowser.selectedTab = this.obj;
+    browser.tabs.update(this.obj.id, {active: true}).then(function() {
+    }, onError);
   },
 
   get lastAccessedAgo () {
@@ -204,40 +200,19 @@ Sortable.prototype = Object.create(Object.prototype, {
 });
 
 function refresh() {
+  browser.windows.getAll({populate: true, windowTypes: ["normal"]}).then(refreshTabs, onError);
+}
+
+function onError(error) {
+  console.log(`Error: ${error}`);
+}
+
+function refreshTabs(windows) {
   window.refreshTime = new MyDate(Date.now());
-  var windows = Services.wm.getEnumerator("navigator:browser");
-  var windowsCount = 0;
-  var tabGroupsCount = 0;
-  var tabs = [];
-  while (windows.hasMoreElements()) {
-    windowsCount++;
-    var win = windows.getNext();
-    var win_tabs = win.gBrowser.tabs;
-    try {
-      var removingTabs = win.gBrowser._removingTabs;
-      win_tabs = Array.filter(win_tabs, function (tab) {
-        return removingTabs.indexOf(tab) == -1;
-      });
-    } catch(e) {}
-    var groups = new Set();
-    win_tabs.forEach(function(tab) {
-      try {
-        groups.add(JSON.parse(tab.__SS_extdata['tabview-tab']).groupID);
-      } catch(e) {}
-    });
-    tabGroupsCount += Math.max(1, groups.size);
-    tabs.push.apply(tabs, win_tabs);
-  }
-
-  var body = document.body;
-
-  while (body.firstChild)
-    body.removeChild(body.firstChild);
 
   var data = {
-    tabCount: tabs.length,
-    windowsCount: windowsCount,
-    tabGroupsCount: tabGroupsCount,
+    tabCount: 0,
+    windowsCount: windows.length,
     blankTabs: 0,
     loadedTabs: 0,
     schemes: new Sortable(),
@@ -249,30 +224,40 @@ function refresh() {
     }
   }
 
-  tabs.forEach(function(t) {
-    var uri = t.linkedBrowser.currentURI;
-    var tab = new Tab(t);
-    if (tab.url == "about:blank") {
-      data.blankTabs++
-      return;
-    }
-    if (tab.loaded) {
-      data.loadedTabs++;
-    }
-    data.uris.add(tab.url, tab);
-    try {
-      if (uri.host) {
-        var tab = new Tab(t);
-        tab.title = uri.host;
-        delete tab.url;
-        data.hosts.add(uri.host, tab);
+  var loc = document.createElement('a');
+
+  for (let w of windows) {
+    data.tabCount += w.tabs.length;
+    for (let t of w.tabs) {
+      loc.href = t.url;
+      var tab = new Tab(t);
+      if (tab.url == "about:blank") {
+	data.blankTabs++
+	continue;
       }
-    } catch(e) {}
-    if (uri.scheme in data.schemes)
-      data.schemes[uri.scheme]++;
-    else
-      data.schemes[uri.scheme] = 1;
-  });
+      if (tab.loaded) {
+	data.loadedTabs++;
+      }
+      data.uris.add(tab.url, tab);
+      try {
+	if (loc.host) {
+	  var tab = new Tab(t);
+	  tab.title = loc.host;
+	  delete tab.url;
+	  data.hosts.add(loc.host, tab);
+	}
+      } catch(e) {}
+      if (loc.protocol in data.schemes)
+	data.schemes[loc.protocol]++;
+      else
+	data.schemes[loc.protocol] = 1;
+    }
+  }
+
+  var body = document.body;
+
+  while (body.firstChild)
+    body.removeChild(body.firstChild);
 
   templates.main.instantiate(body, data);
 }
