@@ -12,7 +12,12 @@
     "browser_style": false,
     "default_area": "tabstrip",
     "default_icon": "tab.svg",
-    "default_title": "Tab Stats"
+    "default_title": "Tab Stats",
+    "theme_icons": [{
+      "dark": "tab.svg",
+      "light": "tab-white.svg",
+      "size": 16
+    }]
   },
   "permissions": [
     "tabs"
