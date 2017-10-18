@@ -11,6 +11,7 @@
   "browser_action": {
     "browser_style": false,
     "default_area": "tabstrip",
+    "default_icon": "tab.svg",
     "default_title": "Tab Stats"
   },
   "permissions": [
