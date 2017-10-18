@@ -46,14 +46,8 @@ Template.prototype = {
       }
       for (var n of node.attributes) {
         if (n.name.startsWith('event-')) {
-          var handler = get_value(n.value, values);
-          if (handler === n.value) {
-            newNode.addEventListener(n.name.slice(6),
-              eval(`(function handler(){${n.value}})`), false);
-          } else {
-            newNode.addEventListener(n.name.slice(6),
-              format(n.value, values), false);
-          }
+          newNode.addEventListener(n.name.slice(6),
+            format(n.value, values), false);
         } else if (!n.name.startsWith('template')) {
           var value = format(n.value, values);
           if (value && typeof value != 'string') {
@@ -136,7 +130,12 @@ function _get_value(values, expr) {
   }
   var name = expr.split('.', 1)[0];
   if (name == expr) {
-    var ret = values[expr];
+    var ret;
+    if (expr in values) {
+      ret = values[expr];
+    } else {
+      ret = window[expr];
+    }
     if (typeof ret == 'function') {
       ret = ret.bind(values);
     }

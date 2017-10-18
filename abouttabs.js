@@ -262,6 +262,14 @@ function refreshTabs(windows) {
   templates.main.instantiate(body, data);
 }
 
+function toggleParent(ev) {
+  toggle(ev.currentTarget.parentNode);
+}
+
+function toggleParentParentParent(ev) {
+  toggle(ev.currentTarget.parentNode.parentNode.parentNode);
+}
+
 function toggle(node) {
   var classes = node.getAttribute('class');
   classes = classes ? classes.split(' ') : [];

@@ -16,7 +16,7 @@
 <template id="main">
   <div id="top">
     <h1>${tabCount}_tab</h1>
-    <button event-click="refresh()">Refresh</button>
+    <button event-click="${refresh}">Refresh</button>
   </div>
   <div id="bar">
     <span>${windowsCount}_window</span>
@@ -35,18 +35,18 @@
 
 <template id="main_group">
   <li template-if="${numDupes}" class="group">
-    <span event-click="toggle(this.parentNode)">${length}_unique_${what}</span>
+    <span event-click="${toggleParent}">${length}_unique_${what}</span>
     <ul template="main_group_with_dupes"></ul>
   </li>
   <li template-if="${!numDupes}" class="group closed">
-    <span event-click="toggle(this.parentNode)">${numUnique}_unique_${what}</span>
+    <span event-click="${toggleParent}">${numUnique}_unique_${what}</span>
     <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
   </li>
 </template>
 
 <template id="main_group_with_dupes">
   <li class="group">
-    <span event-click="toggle(this.parentNode)">${numDupes}_${what} in more than 1 tab</span>
+    <span event-click="${toggleParent}">${numDupes}_${what} in more than 1 tab</span>
     <span class="actions">
       <a href="#" event-click="${dupes.dedup}" template-if="${dupes.dedup}">[Dedup]</a>
       <a href="#" event-click="${dupes.close}">[Close]</a>
@@ -54,7 +54,7 @@
     <ul class="${what}" template="item" template-data="${dupes.byLength}"></ul>
   </li>
   <li class="group closed">
-    <span event-click="toggle(this.parentNode)">${numUnique}_other_${what}</span>
+    <span event-click="${toggleParent}">${numUnique}_other_${what}</span>
     <ul class="${what}" template-delay="item" template-data="${unique.byLastAccessed}"></ul>
   </li>
 </template>
@@ -69,7 +69,7 @@
       <div class="title" template-if="${title}">${title}</div>
       <div class="title" template-if="${!title}">${url}</div>
       <div class="actions">
-        <a href="#" template-if="${length}" event-click="toggle(this.parentNode.parentNode.parentNode)">(${length}_tab)</a>
+        <a href="#" template-if="${length}" event-click="${toggleParentParentParent}">(${length}_tab)</a>
         <a href="#" event-click="${dedup}" template-if="${dedup}">[Dedup]</a>
         <a href="#" event-click="${switchTo}" template-if="${!length}">[Switch to]</a>
         <a href="#" event-click="${close}">[Close]</a>
